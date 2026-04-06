@@ -22,6 +22,7 @@ fi
 
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR/lang"
+mkdir -p "$OUTPUT_DIR/help"
 
 if [[ "${GENERATE_ICONS:-0}" == "1" ]] && command -v python3 >/dev/null 2>&1; then
   python3 "$ROOT_DIR/tools/generate_icon.py" >/dev/null
@@ -84,5 +85,6 @@ echo "Output: $OUTPUT_EXE"
   "${LDFLAGS[@]}"
 
 cp -f "$ROOT_DIR"/lang/*.ini "$OUTPUT_DIR/lang/"
+cp -f "$ROOT_DIR"/help/WindowLayouter.help*.html "$OUTPUT_DIR/help/"
 
 ls -lh "$OUTPUT_EXE"

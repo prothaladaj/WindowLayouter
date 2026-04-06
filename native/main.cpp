@@ -102,6 +102,7 @@ namespace
     constexpr int IDC_PRESETS_DASHBOARD_TITLE = 1066;
     constexpr int IDC_PRESET_EDITOR_TITLE = 1067;
     constexpr int IDC_OPEN_ABOUT = 1068;
+    constexpr int IDC_OPEN_HELP  = 1069;
     constexpr int IDC_ABOUT_TITLE = 1069;
     constexpr int IDC_ABOUT_TEXT = 1070;
     constexpr int IDC_ABOUT_CLOSE = 1071;
@@ -379,6 +380,7 @@ namespace
     void RefreshPresetEditorPreviewState();
     void RefreshWidthFieldState();
 
+    // Load the embedded application icon at the requested pixel size.
     HICON LoadAppIcon(int width, int height)
     {
         return static_cast<HICON>(LoadImageW(
@@ -390,6 +392,7 @@ namespace
             LR_DEFAULTCOLOR));
     }
 
+    // EnumChildWindows callback: sends WM_SETFONT (g_uiFont) and applies Explorer theme to every child.
     BOOL CALLBACK ApplyFontToChildren(HWND window, LPARAM)
     {
         SendMessageW(window, WM_SETFONT, reinterpret_cast<WPARAM>(g_uiFont), TRUE);
@@ -397,6 +400,7 @@ namespace
         return TRUE;
     }
 
+    // (Re)create the three main-window GDI fonts scaled to g_currentDpi.
     void CreateUiFonts()
     {
         if (g_uiFont != nullptr) { DeleteObject(g_uiFont); g_uiFont = nullptr; }
@@ -411,6 +415,7 @@ namespace
         g_uiFontTitle = CreateFontW(titleSize, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
     }
 
+    // (Re)create the auxiliary GDI fonts (for preset editor / about) scaled to `dpi`.
     void CreateAuxUiFonts(UINT dpi)
     {
         if (g_auxUiFont != nullptr) { DeleteObject(g_auxUiFont); g_auxUiFont = nullptr; }
@@ -425,6 +430,9 @@ namespace
         g_auxUiFontTitle = CreateFontW(titleSize, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
     }
 
+    // Apply g_uiFont* to every control in the main window.
+    // Action buttons (Apply, preset shortcuts, editor) get the semi-bold weight;
+    // section titles get the larger title font; everything else gets the body font.
     void ApplyUiFonts(HWND window)
     {
         if (g_uiFont == nullptr)
@@ -474,6 +482,7 @@ namespace
         }
     }
 
+    // Apply g_auxUiFont* to all controls in `window` (preset editor or about dialog).
     void ApplyAuxUiFonts(HWND window)
     {
         if (window == nullptr)
@@ -523,6 +532,7 @@ namespace
         }
     }
 
+    // Strip leading and trailing whitespace from a wide string.
     std::wstring Trim(const std::wstring& value)
     {
         const auto begin = std::find_if_not(value.begin(), value.end(), [](wchar_t character) { return std::iswspace(character) != 0; });
@@ -535,6 +545,7 @@ namespace
         return std::wstring(begin, end);
     }
 
+    // Split a wide string by a single separator character; includes empty parts.
     std::vector<std::wstring> Split(const std::wstring& value, wchar_t separator)
     {
         std::vector<std::wstring> parts;
@@ -555,6 +566,7 @@ namespace
         return parts;
     }
 
+    // Return a locale-independent all-uppercase copy of a wide string.
     std::wstring ToUpper(std::wstring value)
     {
         std::transform(value.begin(), value.end(), value.begin(), [](wchar_t character)
@@ -564,6 +576,7 @@ namespace
         return value;
     }
 
+    // Serialise a ResolutionClass enum to its display/INI string ("Any", "2K", …).
     std::wstring FormatResolutionClass(ResolutionClass value)
     {
         switch (value)
@@ -580,6 +593,7 @@ namespace
         }
     }
 
+    // Parse "Any"/"2K"/"2.5K"/"4K" (case-insensitive) back to ResolutionClass.
     ResolutionClass ParseResolutionClass(const std::wstring& value)
     {
         const auto upper = ToUpper(Trim(value));
@@ -598,6 +612,10 @@ namespace
         return ResolutionClass::Any;
     }
 
+    // Classify a monitor by its pixel resolution.
+    // Uses max/min of width and height to handle portrait-rotated monitors correctly.
+    // Thresholds are intentionally generous — the goal is broad category matching,
+    // not exact panel identification.
     ResolutionClass DetectResolutionClass(const MonitorInfo& monitor)
     {
         const int width = std::max(monitor.bounds.width, monitor.bounds.height);
@@ -617,6 +635,7 @@ namespace
         return ResolutionClass::Any;
     }
 
+    // Serialise a SelectionScope enum to its localised display string.
     std::wstring FormatSelectionScope(SelectionScope value)
     {
         switch (value)
@@ -631,6 +650,7 @@ namespace
         }
     }
 
+    // Parse a SelectionScope from its INI string (case-insensitive English).
     SelectionScope ParseSelectionScope(const std::wstring& value)
     {
         const auto upper = ToUpper(Trim(value));
@@ -645,6 +665,7 @@ namespace
         return SelectionScope::SelectedRows;
     }
 
+    // Serialise an AppSelectionOverride to its localised display / INI string.
     std::wstring FormatAppSelectionOverride(AppSelectionOverride value)
     {
         switch (value)
@@ -661,6 +682,7 @@ namespace
         }
     }
 
+    // Parse an AppSelectionOverride from its INI string (case-insensitive English).
     AppSelectionOverride ParseAppSelectionOverride(const std::wstring& value)
     {
         const auto upper = ToUpper(Trim(value));
@@ -679,6 +701,11 @@ namespace
         return AppSelectionOverride::FollowPreset;
     }
 
+    // =========================================================================
+    // Win32 helper utilities
+    // =========================================================================
+
+    // Read a window's title bar text; returns empty string when the window has none.
     std::wstring ReadWindowText(HWND window)
     {
         const int length = GetWindowTextLengthW(window);
@@ -693,6 +720,7 @@ namespace
         return text;
     }
 
+    // Read the Win32 window class name into a std::wstring.
     std::wstring ReadClassName(HWND window)
     {
         wchar_t buffer[256]{};
@@ -700,6 +728,8 @@ namespace
         return buffer;
     }
 
+    // Cloaked windows (e.g. UWP apps on inactive virtual desktops) are invisible
+    // to the user but still pass IsWindowVisible(); exclude them from the list.
     bool IsWindowCloaked(HWND window)
     {
         DWORD cloaked = 0;
@@ -745,6 +775,8 @@ namespace
         return *value == L'\0';
     }
 
+    // Public wildcard match entry point; enforces the 2-asterisk limit before
+    // delegating to the recursive WildcardMatchImpl.
     bool WildcardMatch(const std::wstring& pattern, const std::wstring& value)
     {
         int starCount = 0;
@@ -758,6 +790,9 @@ namespace
         return WildcardMatchImpl(pattern.c_str(), value.c_str());
     }
 
+    // Settings are stored in %LOCALAPPDATA%\WindowLayouter.Native\settings.ini.
+    // Using AppData rather than the exe directory keeps the install folder clean
+    // and avoids permission issues on Program Files installs.
     std::wstring GetAppDataDirectory()
     {
         wchar_t path[MAX_PATH]{};
@@ -765,6 +800,8 @@ namespace
         return std::wstring(path) + L"\\WindowLayouter.Native";
     }
 
+    // Language files (lang\en.ini, lang\pl.ini …) sit next to the executable
+    // so they ship with the binary and can be edited by the user.
     std::wstring GetExecutableDirectory()
     {
         wchar_t path[MAX_PATH]{};
@@ -774,6 +811,8 @@ namespace
         return slash == std::wstring::npos ? L"." : fullPath.substr(0, slash);
     }
 
+    // GetDpiForWindow() returns 0 for destroyed or null windows; fall back to
+    // g_currentDpi (main window DPI) or the baseline 96 to avoid division by zero.
     UINT GetWindowDpiSafe(HWND window)
     {
         if (window == nullptr)
@@ -785,11 +824,14 @@ namespace
         return dpi == 0 ? 96 : dpi;
     }
 
+    // Create the AppData config directory if it does not already exist.
     void EnsureConfigDirectory()
     {
         CreateDirectoryW(GetAppDataDirectory().c_str(), nullptr);
     }
 
+    // INI values may contain // comments (e.g. written by SaveSettings).
+    // Strip everything from // onward, then trim surrounding whitespace.
     std::wstring StripInlineComment(const std::wstring& value)
     {
         const auto commentIndex = value.find(L"//");
@@ -878,11 +920,13 @@ namespace
         return data;
     }
 
+    // Read settings.ini from g_iniPath (the active settings file path).
     IniData ReadIniData()
     {
         return ReadIniDataFromPath(g_iniPath);
     }
 
+    // Look up a string value; returns fallback when section or key is absent.
     std::wstring ReadIniString(const IniData& data, const std::wstring& section, const std::wstring& key, const std::wstring& fallback)
     {
         const auto sectionIt = data.find(section);
@@ -895,6 +939,7 @@ namespace
         return keyIt == sectionIt->second.end() ? fallback : keyIt->second;
     }
 
+    // Look up an integer value; returns fallback on missing key or parse error.
     int ReadIniInt(const IniData& data, const std::wstring& section, const std::wstring& key, int fallback)
     {
         const auto text = ReadIniString(data, section, key, std::to_wstring(fallback));
@@ -908,16 +953,19 @@ namespace
         }
     }
 
+    // Resolve a UI string from the [Strings] section of the active language file.
     std::wstring Lang(const std::wstring& key, const std::wstring& fallback)
     {
         return ReadIniString(g_languageData, L"Strings", key, fallback);
     }
 
+    // Resolve a tooltip string from the [Tooltips] section of the language file.
     std::wstring Tip(const std::wstring& key, const std::wstring& fallback)
     {
         return ReadIniString(g_languageData, L"Tooltips", key, fallback);
     }
 
+    // Return "pl" when the Windows UI language is Polish, otherwise "en".
     std::wstring DetectDefaultLanguageCode()
     {
         const auto languageId = GetUserDefaultUILanguage();
@@ -925,6 +973,7 @@ namespace
         return primary == LANG_POLISH ? L"pl" : L"en";
     }
 
+    // Load lang\<code>.ini; sanitises the code, falls back to "en" on failure.
     void LoadLanguageResources(const std::wstring& languageCode)
     {
         auto sanitized = Trim(languageCode);
@@ -953,6 +1002,7 @@ namespace
         g_languageFilesStamp = GetLanguageFilesStamp();
     }
 
+    // XOR of last-write-times of all lang\*.ini files — changes when any file is edited.
     long long GetLanguageFilesStamp()
     {
         long long stamp = 0;
@@ -976,6 +1026,7 @@ namespace
         return stamp;
     }
 
+    // Create a WS_POPUP tooltip control owned by `owner` (always-on-top, no prefix).
     HWND CreateTooltipWindow(HWND owner)
     {
         return CreateWindowExW(
@@ -993,6 +1044,8 @@ namespace
             nullptr);
     }
 
+    // Register or update the tooltip text for `control`; uses TTM_ADDTOOL on first
+    // call and TTM_UPDATETIPTEXT on subsequent calls to avoid duplicate entries.
     void SetToolTipText(HWND tooltipWindow, HWND owner, HWND control, const std::wstring& text)
     {
         if (tooltipWindow == nullptr || control == nullptr)
@@ -1019,6 +1072,7 @@ namespace
         }
     }
 
+    // Set the text of a child control looked up by ID; silently does nothing if not found.
     void SetControlTextById(HWND parent, int controlId, const std::wstring& text)
     {
         if (auto* control = GetDlgItem(parent, controlId); control != nullptr)
@@ -1027,6 +1081,7 @@ namespace
         }
     }
 
+    // Update the header text of a list-view column by index.
     void SetListViewColumnText(int columnIndex, const std::wstring& text)
     {
         if (g_listView == nullptr)
@@ -1062,6 +1117,7 @@ namespace
         SetControlTextById(g_rulesPage, IDC_APP_SCOPE_OVERRIDE_LABEL, Lang(L"rules.scope_override", L"App Selection Override"));
         SetControlTextById(g_presetsPage, IDC_PRESETS_DASHBOARD_TITLE, Lang(L"presets.dashboard_title", L"Preset Dashboard"));
         SetControlTextById(g_rulesPage, IDC_OPEN_ABOUT, Lang(L"about.open_button", L"About"));
+        SetControlTextById(g_rulesPage, IDC_OPEN_HELP,  Lang(L"help.open_button",  L"Help"));
 
         if (g_tab != nullptr)
         {
@@ -1128,6 +1184,7 @@ namespace
         SetToolTipText(g_mainTooltips, g_mainWindow, g_appScopeOverrideCombo, Tip(L"rules.scope_override", L"Override every preset scope with one global selection mode."));
         SetToolTipText(g_mainTooltips, g_mainWindow, g_languageCombo, Tip(L"rules.language", L"Choose UI language loaded from an external language file."));
         SetToolTipText(g_mainTooltips, g_mainWindow, GetDlgItem(g_rulesPage, IDC_OPEN_ABOUT), Tip(L"about.open", L"Open application information, version and support details."));
+        SetToolTipText(g_mainTooltips, g_mainWindow, GetDlgItem(g_rulesPage, IDC_OPEN_HELP),  Tip(L"help.open",  L"Open the help file in the default browser."));
         for (const auto& preset : g_presets)
         {
             SetToolTipText(g_mainTooltips, g_mainWindow, GetDlgItem(g_mainWindow, preset.commandId), BuildPresetDescription(preset));
@@ -1234,6 +1291,7 @@ namespace
             g_mainTooltips = CreateTooltipWindow(g_mainWindow);
         }
         SetToolTipText(g_mainTooltips, g_mainWindow, GetDlgItem(g_rulesPage, IDC_OPEN_ABOUT), Tip(L"about.open", L"Open application information, version and support details."));
+        SetToolTipText(g_mainTooltips, g_mainWindow, GetDlgItem(g_rulesPage, IDC_OPEN_HELP),  Tip(L"help.open",  L"Open the help file in the default browser."));
     }
 
     void ReloadLanguageIfChanged()
@@ -1252,6 +1310,7 @@ namespace
         RefreshPresetEditorPreviewState();
     }
 
+    // Write all current settings to g_iniPath, overwriting the file completely.
     void SaveIniData()
     {
         std::wofstream output{std::filesystem::path(g_iniPath), std::ios::trunc};
@@ -1316,6 +1375,7 @@ namespace
         }
     }
 
+    // Write default settings.ini only if the file is not yet present.
     void EnsureIniFileExists()
     {
         if (std::filesystem::exists(std::filesystem::path(g_iniPath)))
@@ -1326,6 +1386,14 @@ namespace
         SaveIniData();
     }
 
+    // =========================================================================
+    // Hotkey parsing and registration
+    // =========================================================================
+
+    // Parse a human-readable hotkey string like "Ctrl+Alt+1" or "Win+F2".
+    // Recognised modifiers: Ctrl/Control, Alt, Shift, Win/Windows.
+    // Key part: single A-Z / 0-9 character, or F1-F24.
+    // Returns spec.valid = false for any unrecognised or empty input.
     HotkeySpec ParseHotkeyText(const std::wstring& rawText)
     {
         HotkeySpec spec{};
@@ -1397,6 +1465,8 @@ namespace
         return spec;
     }
 
+    // Reconstruct the human-readable hotkey string from a parsed HotkeySpec.
+    // Returns "(disabled)" for an invalid spec so the INI value is always printable.
     std::wstring FormatHotkeyText(const HotkeySpec& hotkey)
     {
         if (!hotkey.valid)
@@ -1456,6 +1526,8 @@ namespace
         return text.str();
     }
 
+    // Build a one-line human-readable description of what a preset does.
+    // Used as tooltip text on toolbar buttons and as the preset editor status line.
     std::wstring BuildPresetDescription(const PresetDefinition& preset)
     {
         std::wstringstream text;
@@ -1528,6 +1600,8 @@ namespace
         return text.str();
     }
 
+    // Return true if `monitor` satisfies every activation guard of `preset`:
+    // external-only flag, resolution class, and optional device name wildcard.
     bool MonitorMatchesPresetActivation(const MonitorInfo& monitor, const PresetDefinition& preset)
     {
         if (preset.requireExternalMonitor && monitor.isPrimary)
@@ -1550,6 +1624,9 @@ namespace
         return true;
     }
 
+    // Find the first monitor that satisfies the preset's activation guards.
+    // Falls back to the primary monitor when the preset has no constraints at all.
+    // Returns nullptr when the required monitor is not connected (preset inactive).
     const MonitorInfo* GetPresetTargetMonitor(const PresetDefinition& preset)
     {
         for (const auto& monitor : g_monitors)
@@ -1568,6 +1645,8 @@ namespace
         return nullptr;
     }
 
+    // Build a user-facing message explaining why a preset is currently inactive
+    // (i.e. which monitor type needs to be connected to satisfy its guards).
     std::wstring BuildPresetInactiveReason(const PresetDefinition& preset)
     {
         std::wstringstream text;
@@ -1608,6 +1687,7 @@ namespace
         return text.str();
     }
 
+    // Rebuild the monitor device dropdown with "Any" + current monitor device names.
     void RefreshMonitorDeviceOptions(HWND combo, const std::wstring& selectedValue)
     {
         if (combo == nullptr)
@@ -1633,6 +1713,10 @@ namespace
         SendMessageW(combo, CB_SETCURSEL, selectedIndex, 0);
     }
 
+    // Build the initial preset list with hardcoded defaults.
+    // Preset names, tray labels and toolbar labels are resolved from the active
+    // language file so they translate correctly.  Settings are loaded on top of
+    // these defaults immediately after by LoadSettings().
     std::vector<PresetDefinition> BuildDefaultPresets()
     {
         return
@@ -1645,6 +1729,7 @@ namespace
         };
     }
 
+    // Build the multi-line text displayed in the Monitors tab (device, bounds, DPI, class).
     std::wstring BuildMonitorText()
     {
         std::wstringstream text;
@@ -1671,6 +1756,7 @@ namespace
         return text.str();
     }
 
+    // Build the multi-line text shown in the About dialog (version, publisher, etc.).
     std::wstring BuildAboutText()
     {
         std::wstringstream text;
@@ -1686,6 +1772,7 @@ namespace
         return text.str();
     }
 
+    // Build the reference text shown in the Rules tab (selection, filters, layouts, etc.).
     std::wstring BuildRulesText()
     {
         std::wstringstream text;
@@ -1712,11 +1799,16 @@ namespace
         return text.str();
     }
 
+    // Thin wrapper around SetWindowTextW for use with a direct HWND.
     void SetControlText(HWND control, const std::wstring& text)
     {
         SetWindowTextW(control, text.c_str());
     }
 
+    // Sync main-window toolbar buttons with the current preset list.
+    // Each button label, enabled state and visibility is updated to reflect the
+    // preset's current settings; a preset is disabled when its target monitor
+    // is not available.
     void RefreshToolbarPresetButtons()
     {
         for (size_t index = 0; index < g_presets.size(); ++index)
@@ -1733,6 +1825,8 @@ namespace
         }
     }
 
+    // Repopulate the preset editor listbox with current preset names and
+    // restore the selection to g_selectedPresetIndex.
     void RefreshPresetListBox()
     {
         if (g_presetList == nullptr)
@@ -1748,6 +1842,8 @@ namespace
         SendMessageW(g_presetList, LB_SETCURSEL, g_selectedPresetIndex, 0);
     }
 
+    // Push preset[index] data into every editor control and update the preview.
+    // Also updates g_selectedPresetIndex and the listbox selection.
     void LoadPresetIntoEditor(int index)
     {
         if (index < 0 || index >= static_cast<int>(g_presets.size()))
@@ -1787,6 +1883,7 @@ namespace
         }
     }
 
+    // Rebuild the status text and repaint the preview panel from the current editor state.
     void RefreshPresetEditorPreviewState()
     {
         if (g_presetEditorWindow == nullptr || g_presetStatus == nullptr)
@@ -1815,6 +1912,8 @@ namespace
         EnableWindow(g_presetWidthEdit, isSplit ? TRUE : FALSE);
     }
 
+    // Snapshot the current editor form into a temporary PresetDefinition for live preview.
+    // Does not write to g_presets — use SavePresetFromEditor() to persist.
     PresetDefinition BuildPreviewPresetFromEditor()
     {
         PresetDefinition preset = g_selectedPresetIndex >= 0 && g_selectedPresetIndex < static_cast<int>(g_presets.size())
@@ -1869,6 +1968,10 @@ namespace
     // Preset editor — read/write between editor controls and g_presets
     // =========================================================================
 
+    // Validate and commit the editor form into g_presets[g_selectedPresetIndex].
+    // Returns false (with a status message) when the name is empty or the
+    // hotkey string cannot be parsed.  On success: refreshes the list box,
+    // toolbar, hotkey registrations and saves settings.ini.
     bool SavePresetFromEditor()
     {
         if (g_selectedPresetIndex < 0 || g_selectedPresetIndex >= static_cast<int>(g_presets.size()))
@@ -1938,6 +2041,8 @@ namespace
         return true;
     }
 
+    // Refresh all read-only text areas (monitor info, preset summary, rules help)
+    // and sync toolbar buttons and the preset editor status line with current state.
     void UpdateTabContent()
     {
         SetWindowTextW(g_monitorsEdit, BuildMonitorText().c_str());
@@ -1985,6 +2090,7 @@ namespace
         return text.str();
     }
 
+    // Make the preset editor visible, restore it if minimised, and bring it to front.
     void ShowPresetEditorWindow()
     {
         if (g_presetEditorWindow == nullptr)
@@ -1998,6 +2104,19 @@ namespace
         LoadPresetIntoEditor(g_selectedPresetIndex);
     }
 
+    // Open the language-specific help file in the default browser.
+    // Tries help\WindowLayouter.help.<code>.html first; falls back to English.
+    void OpenHelpFile()
+    {
+        const auto dir      = GetExecutableDirectory() + L"\\help\\";
+        const auto localised = dir + L"WindowLayouter.help." + g_languageCode + L".html";
+        const auto english   = dir + L"WindowLayouter.help.html";
+        const auto path = std::filesystem::exists(std::filesystem::path(localised))
+                          ? localised : english;
+        ShellExecuteW(nullptr, L"open", path.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+    }
+
+    // Make the About dialog visible and bring it to front.
     void ShowAboutWindow()
     {
         if (g_aboutWindow == nullptr)
@@ -2010,6 +2129,7 @@ namespace
         SetForegroundWindow(g_aboutWindow);
     }
 
+    // Lay out all preset editor controls using DPI-scaled sizes.
     void ResizePresetEditorControls()
     {
         if (g_presetEditorWindow == nullptr)
@@ -2175,6 +2295,7 @@ namespace
         return DefWindowProcW(window, message, wParam, lParam);
     }
 
+    // Create the About window (hidden); shown later via ShowAboutWindow().
     void CreateAboutWindow(HINSTANCE instance)
     {
         const UINT dpi = GetWindowDpiSafe(g_mainWindow);
@@ -2196,6 +2317,7 @@ namespace
         ShowWindow(g_aboutWindow, SW_HIDE);
     }
 
+    // Lay out the About dialog controls (title, text area, close button).
     void ResizeAboutControls()
     {
         if (g_aboutWindow == nullptr)
@@ -2265,6 +2387,7 @@ namespace
         return DefWindowProcW(window, message, wParam, lParam);
     }
 
+    // Show the tab page matching the current tab selection; hide the other two.
     void ShowActiveTabPage()
     {
         const auto tabIndex = TabCtrl_GetCurSel(g_tab);
@@ -2273,6 +2396,7 @@ namespace
         ShowWindow(g_rulesPage, tabIndex == 2 ? SW_SHOW : SW_HIDE);
     }
 
+    // EnumDisplayMonitors callback: appends one MonitorInfo per physical display.
     BOOL CALLBACK EnumMonitorsProc(HMONITOR monitor, HDC, LPRECT, LPARAM data)
     {
         auto* monitors = reinterpret_cast<std::vector<MonitorInfo>*>(data);
@@ -2298,6 +2422,7 @@ namespace
         return TRUE;
     }
 
+    // Enumerate all connected displays and return them as a MonitorInfo vector.
     std::vector<MonitorInfo> GetMonitors()
     {
         std::vector<MonitorInfo> monitors;
@@ -2305,6 +2430,7 @@ namespace
         return monitors;
     }
 
+    // Return a pointer to the primary monitor, or the first monitor if none is flagged primary.
     const MonitorInfo* GetPrimaryMonitor()
     {
         auto it = std::find_if(g_monitors.begin(), g_monitors.end(), [](const MonitorInfo& item) { return item.isPrimary; });
@@ -2316,6 +2442,10 @@ namespace
         return g_monitors.empty() ? nullptr : &g_monitors.front();
     }
 
+    // Collect all metadata for a single window: title, process name, class, bounds,
+    // the monitor it sits on (nearest), its DPI, and whether it is minimised.
+    // Process name is obtained via QueryFullProcessImageNameW (requires
+    // PROCESS_QUERY_LIMITED_INFORMATION which works across integrity levels).
     WindowInfo BuildWindowInfo(HWND window, int zOrder)
     {
         RECT rect{};
@@ -2408,6 +2538,7 @@ namespace
         return TRUE;
     }
 
+    // Format an HWND as a "0x…" hex string for display in the window list.
     std::wstring ToHandleHex(HWND handle)
     {
         std::wstringstream stream;
@@ -2415,6 +2546,7 @@ namespace
         return stream.str();
     }
 
+    // Read the current text of any edit/combo/static control into a std::wstring.
     std::wstring GetControlText(HWND control)
     {
         const int length = GetWindowTextLengthW(control);
@@ -2426,6 +2558,7 @@ namespace
         return text;
     }
 
+    // Return true when a window passes both the title and process filter edit fields.
     bool MatchesWindowListFilters(const WindowInfo& window)
     {
         const auto titlePattern = Trim(GetControlText(g_filterTitleEdit));
@@ -2433,6 +2566,7 @@ namespace
         return MatchesOptionalPattern(titlePattern, window.title) && MatchesOptionalPattern(processPattern, window.processName);
     }
 
+    // Three-way compare two WindowInfo structs by the given list-view column index.
     int CompareWindowInfo(const WindowInfo& left, const WindowInfo& right, int column)
     {
         auto compareText = [](const std::wstring& a, const std::wstring& b)
@@ -2461,6 +2595,11 @@ namespace
         }
     }
 
+    // Full window + monitor re-enumeration.
+    // Saves currently selected HWNDs so the selection can be restored after the
+    // list is rebuilt.  Calls EnumWindows to discover windows, sorts them by the
+    // active column, applies current filters to build g_visibleWindows, and
+    // repopulates the list view.  Also calls UpdateTabContent() to sync tabs.
     void RefreshWindowList()
     {
         std::vector<HWND> selectedHandles;
@@ -2529,6 +2668,9 @@ namespace
         UpdateStatus(status.str());
     }
 
+    // Lightweight re-filter that does NOT re-enumerate windows or monitors.
+    // Rebuilds g_visibleWindows and the list view from the existing g_windows set
+    // using the current filter edit contents.  Called on every filter keystroke.
     void RefilterWindowList()
     {
         std::vector<HWND> selectedHandles;
@@ -2582,6 +2724,7 @@ namespace
         UpdateStatus(status.str());
     }
 
+    // Return pointers to every WindowInfo currently selected in the list view.
     std::vector<WindowInfo*> GetSelectedWindows()
     {
         std::vector<WindowInfo*> windows;
@@ -2597,11 +2740,13 @@ namespace
         return windows;
     }
 
+    // Return the current g_visibleWindows vector (filter-passing subset of g_windows).
     std::vector<WindowInfo*> GetVisibleWindows()
     {
         return g_visibleWindows;
     }
 
+    // Return pointers to every window in g_windows regardless of filter or selection.
     std::vector<WindowInfo*> GetAllDiscoveredWindows()
     {
         std::vector<WindowInfo*> windows;
@@ -2613,6 +2758,9 @@ namespace
         return windows;
     }
 
+    // Resolve the selection scope that will actually be used when applying a preset.
+    // g_appSelectionOverride takes priority; if it is FollowPreset, the preset's
+    // own selectionScope is used.
     SelectionScope GetEffectiveSelectionScope(const PresetDefinition& preset)
     {
         switch (g_appSelectionOverride)
@@ -2629,6 +2777,7 @@ namespace
         }
     }
 
+    // Match value against pattern; an empty pattern matches everything (pass-through).
     bool MatchesOptionalPattern(const std::wstring& pattern, const std::wstring& value)
     {
         if (Trim(pattern).empty())
@@ -2639,6 +2788,9 @@ namespace
         return WildcardMatch(pattern, value);
     }
 
+    // Filter `windows` by title and process wildcard patterns, then sort the
+    // result by z-order so windows appear in the order they are stacked on screen.
+    // Empty patterns match everything (pass-through).
     std::vector<WindowInfo*> FilterWindows(const std::vector<WindowInfo*>& windows, const std::wstring& titlePattern, const std::wstring& processPattern)
     {
         std::vector<WindowInfo*> filtered;
@@ -2658,6 +2810,7 @@ namespace
         return filtered;
     }
 
+    // Deselect every row in the list view and update the status bar.
     void ClearSelection()
     {
         const auto itemCount = ListView_GetItemCount(g_listView);
@@ -2668,6 +2821,8 @@ namespace
         UpdateStatus(Lang(L"status.selection_cleared", L"Selection cleared."));
     }
 
+    // Shrink `rect` by `padding` on all sides (used to add gaps between tiles).
+    // Clamps to a minimum of 50×40 px so tiny tiles stay visible in the preview.
     RectInt InsetRect(RectInt rect, int padding)
     {
         rect.left += padding;
@@ -2677,6 +2832,10 @@ namespace
         return rect;
     }
 
+    // Divide `frame` into a uniform columns×rows grid and return up to `count`
+    // cells in row-major order.  Each cell is inset by g_windowGapPx so windows
+    // have a visible gap.  The last column and last row are extended by the
+    // remainder from integer division to avoid one-pixel gaps.
     std::vector<RectInt> BuildGrid(RectInt frame, int columns, int rows, int count)
     {
         std::vector<RectInt> rects;
@@ -2704,6 +2863,8 @@ namespace
         return rects;
     }
 
+    // Move and resize a window to `rect` in virtual-screen coordinates.
+    // Restores minimized windows first so SetWindowPos takes effect immediately.
     bool MoveWindowToRect(WindowInfo& window, const RectInt& rect)
     {
         if (window.minimized)
@@ -2721,6 +2882,16 @@ namespace
             SWP_NOACTIVATE | SWP_NOZORDER) != FALSE;
     }
 
+    // Core preset application entry point.
+    // 1. Refreshes the window and monitor list.
+    // 2. Resolves the target monitor (aborts with a status message if inactive).
+    // 3. Collects candidate windows according to the effective selection scope.
+    // 4a. Grid mode: divides the monitor work area into an NxM grid and assigns
+    //     one window per cell in list order.
+    // 4b. Split mode: separates candidates into "left" (matched by left patterns)
+    //     and "right" (matched by right patterns) groups; left windows tile the
+    //     left column, right windows stack on top of each other in the right column.
+    // 5. Updates the status bar with a result summary.
     void ApplyPresetByDefinition(const PresetDefinition& preset)
     {
         RefreshWindowList();
@@ -2848,6 +3019,7 @@ namespace
         UpdateStatus(status.str());
     }
 
+    // Find the preset whose toolbar/tray WM_COMMAND id matches commandId.
     const PresetDefinition* FindPresetByCommand(int commandId)
     {
         auto it = std::find_if(g_presets.begin(), g_presets.end(), [&](const PresetDefinition& preset)
@@ -2858,6 +3030,7 @@ namespace
         return it == g_presets.end() ? nullptr : &*it;
     }
 
+    // Find the preset registered under a given WM_HOTKEY id.
     const PresetDefinition* FindPresetByHotkeyId(int hotkeyId)
     {
         auto it = std::find_if(g_presets.begin(), g_presets.end(), [&](const PresetDefinition& preset)
@@ -2902,11 +3075,13 @@ namespace
         SetForegroundWindow(g_mainWindow);
     }
 
+    // Hide the main window to the tray without destroying it.
     void HideMainWindow()
     {
         ShowWindow(g_mainWindow, SW_HIDE);
     }
 
+    // Register the system-tray icon and associate it with WMAPP_TRAYICON messages.
     void AddTrayIcon()
     {
         ZeroMemory(&g_trayIcon, sizeof(g_trayIcon));
@@ -2922,6 +3097,7 @@ namespace
         g_trayAdded = Shell_NotifyIconW(NIM_ADD, &g_trayIcon) != FALSE;
     }
 
+    // Remove the tray icon (called on exit and before re-adding on shell restart).
     void RemoveTrayIcon()
     {
         if (g_trayAdded)
@@ -2931,6 +3107,7 @@ namespace
         }
     }
 
+    // Build and show the tray right-click popup; preset items are greyed when inactive.
     void ShowTrayMenu()
     {
         HMENU menu = CreatePopupMenu();
@@ -2964,6 +3141,7 @@ namespace
         DestroyMenu(menu);
     }
 
+    // Unregister all hotkeys currently held by presets in g_presets.
     void UnregisterPresetHotkeys()
     {
         for (const auto& preset : g_presets)
@@ -2972,6 +3150,8 @@ namespace
         }
     }
 
+    // Re-register global hotkeys for every preset that has a valid hotkey spec.
+    // Clears spec.valid if RegisterHotKey fails (e.g. another app owns the combo).
     void RegisterPresetHotkeys()
     {
         UnregisterPresetHotkeys();
@@ -2989,6 +3169,14 @@ namespace
         }
     }
 
+    // Load all persistent settings from settings.ini into g_presets and globals.
+    // Order of operations:
+    //   1. Ensure %LOCALAPPDATA%\WindowLayouter.Native\ exists.
+    //   2. Bootstrap g_presets with BuildDefaultPresets() so every field has a
+    //      sane value even if the INI file is missing or partial.
+    //   3. Create settings.ini from defaults if not yet present.
+    //   4. Read language, gap, scope override, hotkeys and per-preset fields.
+    // Returns the raw IniData so the caller can extract Window placement values.
     IniData LoadSettings()
     {
         EnsureConfigDirectory();
@@ -3041,11 +3229,14 @@ namespace
         return iniData;
     }
 
+    // Persist all current settings (window position, presets, hotkeys, language)
+    // to settings.ini, overwriting the previous file completely.
     void SaveSettings()
     {
         SaveIniData();
     }
 
+    // Restore the main window position/size and active tab from a previously loaded IniData.
     void ApplySavedWindowPlacement(const IniData& iniData)
     {
         const int left = ReadIniInt(iniData, L"Window", L"left", CW_USEDEFAULT);
@@ -3060,6 +3251,7 @@ namespace
         ShowActiveTabPage();
     }
 
+    // Lay out all main-window controls using DPI-scaled sizes; called on WM_SIZE.
     void ResizeControls(HWND window)
     {
         RECT client{};
@@ -3133,11 +3325,14 @@ namespace
         MoveWindow(g_appScopeOverrideCombo, s(186), 0, s(220), s(240), TRUE);
         MoveWindow(GetDlgItem(g_rulesPage, IDC_LANGUAGE_LABEL), s(420), 0, s(90), s(20), TRUE);
         MoveWindow(g_languageCombo, s(514), 0, s(160), s(240), TRUE);
-        MoveWindow(GetDlgItem(g_rulesPage, IDC_OPEN_ABOUT), s(688), 0, s(110), s(28), TRUE);
+        MoveWindow(GetDlgItem(g_rulesPage, IDC_OPEN_ABOUT), s(688), 0, s(80), s(28), TRUE);
+        MoveWindow(GetDlgItem(g_rulesPage, IDC_OPEN_HELP),  s(776), 0, s(64), s(28), TRUE);
         MoveWindow(g_rulesEdit, 0, s(36), pageWidth, pageHeight - s(36), TRUE);
         ShowActiveTabPage();
     }
 
+    // Create the tab control and its three page panels (Monitors, Presets, Rules)
+    // with all child controls inside each page.
     void CreateTabs(HWND parent)
     {
         g_tab = CreateWindowW(
@@ -3185,8 +3380,10 @@ namespace
         SendMessageW(g_languageCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"English"));
         SendMessageW(g_languageCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"Polski"));
         CreateWindowW(L"BUTTON", L"About", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 0, 0, 0, 0, g_rulesPage, reinterpret_cast<HMENU>(IDC_OPEN_ABOUT), nullptr, nullptr);
+        CreateWindowW(L"BUTTON", L"Help", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 0, 0, 0, 0, g_rulesPage, reinterpret_cast<HMENU>(IDC_OPEN_HELP), nullptr, nullptr);
     }
 
+    // Create the preset editor top-level window (hidden); shown via ShowPresetEditorWindow().
     void CreatePresetEditorWindow(HINSTANCE instance)
     {
         g_presetEditorWindow = CreateWindowExW(
@@ -3507,6 +3704,9 @@ namespace
                 return 0;
             case IDC_OPEN_ABOUT:
                 ShowAboutWindow();
+                return 0;
+            case IDC_OPEN_HELP:
+                OpenHelpFile();
                 return 0;
             case IDC_APPLY_SELECTED_PRESET:
                 if (g_selectedPresetIndex >= 0 && g_selectedPresetIndex < static_cast<int>(g_presets.size()))

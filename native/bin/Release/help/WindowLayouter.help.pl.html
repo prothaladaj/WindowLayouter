@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WindowLayouter — Pomoc</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --accent:      #3b74d8;
+    --accent-dim:  #d0e0ff;
+    --bg:          #f8f9fb;
+    --surface:     #ffffff;
+    --border:      #e2e6ed;
+    --text:        #1e2128;
+    --text-muted:  #5a6275;
+    --code-bg:     #f0f2f5;
+    --nav-width:   270px;
+    --nav-bg:      #f0f2f6;
+    --nav-active:  #3b74d8;
+    --note-bg:     #fffbe6;
+    --note-border: #f0c040;
+    --tip-bg:      #eaf3ff;
+    --tip-border:  #7db0f0;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    display: flex;
+  }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--nav-width);
+    height: 100vh;
+    background: var(--nav-bg);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+
+  nav .nav-header {
+    padding: 22px 20px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  nav .nav-header span {
+    display: block;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: none;
+    letter-spacing: 0;
+    margin-bottom: 2px;
+  }
+
+  nav ul { list-style: none; padding: 10px 0 24px; }
+
+  nav ul li a {
+    display: block;
+    padding: 5px 20px;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: color .15s, background .15s, border-color .15s;
+    line-height: 1.5;
+  }
+
+  nav ul li a:hover { color: var(--text); background: rgba(0,0,0,.04); }
+
+  nav ul li a.active {
+    color: var(--nav-active);
+    border-left-color: var(--nav-active);
+    background: var(--accent-dim);
+    font-weight: 600;
+  }
+
+  nav ul li.section-label {
+    padding: 14px 20px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #9aa2b4;
+  }
+
+  main {
+    margin-left: var(--nav-width);
+    max-width: 860px;
+    padding: 56px 60px 100px;
+    flex: 1;
+  }
+
+  h1 { font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -.3px; }
+
+  .subtitle {
+    font-size: 16px;
+    color: var(--text-muted);
+    margin-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+  }
+
+  section { margin-bottom: 64px; }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    padding-top: 8px;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  h2 .icon { font-size: 20px; opacity: .75; }
+
+  h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 28px 0 10px; }
+
+  p { margin-bottom: 14px; }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  ul, ol { margin: 0 0 16px 20px; }
+  li { margin-bottom: 5px; }
+
+  code {
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: #c7254e;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 18px;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 13px;
+    overflow-x: auto;
+    margin: 0 0 18px;
+    line-height: 1.6;
+  }
+
+  .note, .tip {
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .note { background: var(--note-bg); border-left: 4px solid var(--note-border); }
+  .tip  { background: var(--tip-bg);  border-left: 4px solid var(--tip-border); }
+
+  .note strong, .tip strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    opacity: .7;
+  }
+
+  kbd {
+    display: inline-block;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    background: #fff;
+    border: 1px solid #bcc2ce;
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; background: var(--nav-bg); border: 1px solid var(--border); font-weight: 600; font-size: 13px; }
+  td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: #fafbfc; }
+
+  .layout-diagram {
+    display: flex;
+    gap: 6px;
+    background: #e8edf4;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 18px 0;
+    height: 120px;
+    border: 1px solid var(--border);
+  }
+
+  .layout-diagram .col { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .layout-diagram .col.narrow { flex: 0 0 30%; }
+
+  .tile {
+    flex: 1;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .tile.yellow { background: #ffd87a; border: 1px solid #e8b830; }
+  .tile.blue   { background: #8099e8; border: 1px solid #5b7dd4; color: #fff; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-header">
+    <span>WindowLayouter</span>
+    Pomoc i dokumentacja
+  </div>
+  <ul>
+    <li class="section-label">Pierwsze kroki</li>
+    <li><a href="#przeglad">Przegląd</a></li>
+    <li><a href="#szybki-start">Szybki start</a></li>
+
+    <li class="section-label">Okno główne</li>
+    <li><a href="#pasek-narzedzi">Pasek narzędzi</a></li>
+    <li><a href="#lista-okien">Lista okien</a></li>
+    <li><a href="#filtry">Filtry</a></li>
+    <li><a href="#zakladki">Zakładki</a></li>
+
+    <li class="section-label">Presety</li>
+    <li><a href="#czym-jest-preset">Czym jest preset?</a></li>
+    <li><a href="#tryb-siatki">Tryb siatki (Grid)</a></li>
+    <li><a href="#tryb-podzielony">Tryb podzielony (Split)</a></li>
+    <li><a href="#zakres-wyboru">Zakres wyboru</a></li>
+    <li><a href="#warunki-aktywacji">Warunki aktywacji</a></li>
+    <li><a href="#skroty">Skróty klawiszowe</a></li>
+
+    <li class="section-label">Edytor presetów</li>
+    <li><a href="#pola-edytora">Pola edytora</a></li>
+    <li><a href="#zapisz-vs-zastosuj">Zapisz vs Zastosuj</a></li>
+
+    <li class="section-label">Dokumentacja</li>
+    <li><a href="#wzorce">Wzorce wieloznaczne</a></li>
+    <li><a href="#klasy-rozdzielczosci">Klasy rozdzielczości</a></li>
+    <li><a href="#zasobnik">Zasobnik systemowy</a></li>
+    <li><a href="#plik-ustawien">Plik ustawień</a></li>
+    <li><a href="#jezyk">Język</a></li>
+  </ul>
+</nav>
+
+<main>
+  <h1>WindowLayouter</h1>
+  <p class="subtitle">Menedżer układów okien z obsługą wielu monitorów — Pomoc i dokumentacja</p>
+
+  <!-- ─── PRZEGLĄD ──────────────────────────────────────────────────── -->
+  <section id="przeglad">
+    <h2><span class="icon">📐</span>Przegląd</h2>
+    <p>
+      WindowLayouter to lekkie narzędzie dla systemu Windows, które układa otwarte okna
+      aplikacji w predefiniowane wzorce kafelkowe na wybranym monitorze. Układy definiuje
+      się jako <em>presety</em>: każdy preset zawiera kształt siatki, które okna uwzględnić
+      oraz na którym monitorze je rozmieścić. Presety można uruchamiać z paska narzędzi,
+      zasobnika systemowego lub globalnego skrótu klawiszowego.
+    </p>
+    <p>Główne możliwości:</p>
+    <ul>
+      <li>Kafelkowanie w siatce — podział obszaru roboczego monitora na siatkę N×M i wypełnienie jej wybranymi oknami.</li>
+      <li>Kafelkowanie podzielone — rozdzielenie okien na lewą kolumnę z siatką i prawą z układem stosowym na podstawie wzorców nazw procesów i tytułów.</li>
+      <li>Warunki aktywacji — ograniczenie presetu do określonej klasy rozdzielczości lub nazwy urządzenia monitora.</li>
+      <li>Globalne skróty klawiszowe — stosowanie presetów bez przełączania aktywnego okna.</li>
+      <li>Dynamiczne przełączanie języka — etykiety UI są ładowane z zewnętrznych plików <code>.ini</code> w czasie działania programu.</li>
+      <li>Jedna instancja — ponowne uruchomienie programu przenosi istniejące okno na pierwszy plan.</li>
+    </ul>
+  </section>
+
+  <!-- ─── SZYBKI START ──────────────────────────────────────────────── -->
+  <section id="szybki-start">
+    <h2><span class="icon">🚀</span>Szybki start</h2>
+    <ol>
+      <li>Uruchom <code>WindowLayouter.exe</code>. Program otworzy okno główne i doda ikonę do zasobnika.</li>
+      <li>Zaznacz jeden lub więcej wierszy na <a href="#lista-okien">liście okien</a>.</li>
+      <li>Kliknij przycisk presetu na pasku narzędzi (np. <strong>4K &gt; 2×2</strong>).</li>
+      <li>Zaznaczone okna zostaną natychmiast przeniesione na docelowy monitor.</li>
+    </ol>
+    <div class="tip">
+      <strong>Wskazówka</strong>
+      Jeśli przyciski presetów są wyszarzone, wymagany monitor nie jest podłączony.
+      Zobacz <a href="#warunki-aktywacji">Warunki aktywacji</a>.
+    </div>
+    <p>
+      Aby dostosować skróty, wzorce lub wymiary siatki, otwórz
+      <a href="#pola-edytora">Edytor presetów</a> z paska narzędzi lub menu zasobnika.
+      Ustawienia są zapisywane automatycznie w pliku <a href="#plik-ustawien"><code>settings.ini</code></a>.
+    </p>
+  </section>
+
+  <!-- ─── PASEK NARZĘDZI ────────────────────────────────────────────── -->
+  <section id="pasek-narzedzi">
+    <h2><span class="icon">🔧</span>Pasek narzędzi</h2>
+    <p>Pasek narzędzi biegnie wzdłuż górnej krawędzi okna głównego i zawiera:</p>
+    <table>
+      <tr><th>Przycisk</th><th>Działanie</th></tr>
+      <tr><td><strong>Odśwież</strong></td><td>Ponownie wykrywa otwarte okna i podłączone monitory. Używaj po otwarciu lub zamknięciu aplikacji.</td></tr>
+      <tr><td><strong>Wyczyść zaznaczenie</strong></td><td>Odznacza wszystkie wiersze na liście okien.</td></tr>
+      <tr><td><strong>Zastosuj wybrany preset</strong></td><td>Stosuje preset aktualnie podświetlony w zakładce <em>Presety</em> lub Edytorze presetów. Niedostępny gdy wymagany monitor jest odłączony.</td></tr>
+      <tr><td><em>Przyciski presetów</em></td><td>Każdy aktywny preset z włączoną opcją <em>Pokaż jako przycisk</em> pojawia się tutaj. Kliknięcie natychmiast stosuje preset. Wyszarzone przyciski oznaczają nieaktywny preset.</td></tr>
+      <tr><td><strong>Edytor presetów</strong></td><td>Otwiera okno Edytora presetów.</td></tr>
+    </table>
+    <div class="note">
+      <strong>Uwaga</strong>
+      Przyciski presetów są ukryte, gdy preset ma wyłączoną opcję <em>Pokaż jako przycisk paska</em> w edytorze.
+    </div>
+  </section>
+
+  <!-- ─── LISTA OKIEN ───────────────────────────────────────────────── -->
+  <section id="lista-okien">
+    <h2><span class="icon">🗂️</span>Lista okien</h2>
+    <p>
+      Lista po lewej stronie okna głównego pokazuje wszystkie wykryte okna aplikacji
+      najwyższego poziomu. Każdy wiersz reprezentuje jedno okno z jego tytułem,
+      nazwą procesu, klasą okna, nazwą monitora i uchwytem HWND (szesnastkowo).
+    </p>
+    <h3>Zaznaczanie</h3>
+    <p>
+      Kliknij wiersz, aby go zaznaczyć. Przytrzymaj <kbd>Ctrl</kbd>, aby dodać wiersze,
+      lub <kbd>Shift</kbd>, aby rozszerzyć zakres. Nie ma pól wyboru — obowiązuje
+      standardowe wielokrotne zaznaczanie widoku listy. Zaznaczenie określa, na których
+      oknach zadziała preset z zakresem <em>Zaznaczone wiersze</em>.
+    </p>
+    <h3>Sortowanie</h3>
+    <p>
+      Kliknij nagłówek kolumny, aby posortować według tej kolumny. Kliknij ponownie,
+      aby odwrócić kolejność.
+    </p>
+    <h3>Pomijane okna</h3>
+    <p>Na liście nigdy nie pojawiają się:</p>
+    <ul>
+      <li>Okna bez tytułu.</li>
+      <li>Okna narzędziowe (<code>WS_EX_TOOLWINDOW</code>) i okna bez aktywacji.</li>
+      <li>Okna przesłonięte (<em>cloaked</em>) — np. aplikacje UWP na nieaktywnych pulpitach wirtualnych.</li>
+      <li>Bardzo małe okna — węższe niż 60 px lub niższe niż 40 px.</li>
+      <li>Elementy powłoki: <code>Progman</code>, <code>WorkerW</code>, <code>Shell_TrayWnd</code>.</li>
+    </ul>
+  </section>
+
+  <!-- ─── FILTRY ────────────────────────────────────────────────────── -->
+  <section id="filtry">
+    <h2><span class="icon">🔍</span>Filtry</h2>
+    <p>
+      Nad listą okien znajdują się dwa pola filtrowania: <strong>Tytuł</strong> i
+      <strong>Proces</strong>. Oba obsługują <a href="#wzorce">wzorce wieloznaczne</a>.
+      Filtrowanie jest natychmiastowe — lista aktualizuje się przy każdym naciśnięciu klawisza.
+    </p>
+    <table>
+      <tr><th>Pole</th><th>Dopasowuje</th><th>Przykład</th></tr>
+      <tr><td>Tytuł</td><td>Tekst tytułu okna</td><td><code>*Messenger*</code></td></tr>
+      <tr><td>Proces</td><td>Nazwa pliku wykonywalnego (basename)</td><td><code>*chrome*</code></td></tr>
+    </table>
+    <p>
+      Puste pole oznacza <em>dopasuj wszystko</em>. Oba filtry działają jednocześnie (logika AND).
+    </p>
+    <div class="tip">
+      <strong>Wskazówka</strong>
+      Połącz oba filtry, aby precyzyjnie wybrać okno. Na przykład
+      <code>Tytuł: *Spotkanie*</code> + <code>Proces: *teams*</code>
+      pokaże tylko okna Teams, których tytuł zawiera „Spotkanie".
+    </div>
+  </section>
+
+  <!-- ─── ZAKŁADKI ──────────────────────────────────────────────────── -->
+  <section id="zakladki">
+    <h2><span class="icon">📑</span>Zakładki</h2>
+    <p>Prawy panel okna głównego zawiera trzy zakładki.</p>
+
+    <h3>Monitory</h3>
+    <p>
+      Wyświetla zrzut tekstowy każdego wykrytego monitora: nazwę urządzenia
+      (np. <code>\\.\DISPLAY1</code>), rozdzielczość w pikselach, obszar roboczy,
+      klasę rozdzielczości, DPI i czy jest to monitor podstawowy.
+      Na górze widoczna jest ścieżka do <code>settings.ini</code>.
+    </p>
+
+    <h3>Presety</h3>
+    <p>
+      Pokazuje podsumowanie wszystkich zdefiniowanych presetów: etykiety zasobnika i paska,
+      <a href="#zakres-wyboru">zakres wyboru</a>,
+      <a href="#warunki-aktywacji">stan aktywacji</a> i opis układu.
+      Aby edytować presety, kliknij <strong>Otwórz edytor presetów</strong>.
+    </p>
+
+    <h3>Reguły</h3>
+    <p>Zawiera dwie kontrolki i panel z tekstem referencyjnym:</p>
+    <ul>
+      <li>
+        <strong>Globalne zastąpienie zakresu</strong> — nadpisuje zakres wyboru każdego
+        presetu jednym stałym trybem. Ustaw <em>Śledź preset</em>, aby każdy preset
+        używał własnego ustawienia.
+      </li>
+      <li>
+        <strong>Język</strong> — zmiana języka interfejsu. Zobacz <a href="#jezyk">Język</a>.
+      </li>
+    </ul>
+  </section>
+
+  <!-- ─── CZYM JEST PRESET ─────────────────────────────────────────── -->
+  <section id="czym-jest-preset">
+    <h2><span class="icon">🎛️</span>Czym jest preset?</h2>
+    <p>Preset to nazwana receptura układu. Gdy stosujesz preset, WindowLayouter:</p>
+    <ol>
+      <li>Odświeża listy okien i monitorów.</li>
+      <li>Sprawdza, czy <a href="#warunki-aktywacji">warunki aktywacji</a> presetu są spełnione.</li>
+      <li>Zbiera okna kandydatów zgodnie z <a href="#zakres-wyboru">zakresem wyboru</a>.</li>
+      <li>Rozmieszcza te okna układem <a href="#tryb-siatki">Grid</a> lub <a href="#tryb-podzielony">Split</a>.</li>
+    </ol>
+    <p>
+      Presety są zapisywane w <a href="#plik-ustawien"><code>settings.ini</code></a>
+      i zachowywane po restarcie. Wbudowane presety są w pełni edytowalne — ich liczba
+      jest stała (pięć), ale wszystkie pola można zmieniać: nazwa, skrót, wymiary siatki,
+      wzorce i warunki aktywacji.
+    </p>
+    <p>
+      Kolejność okien w układzie wynika z systemowego z-order (od przedniego do tylnego)
+      po filtracji wzorcami — okno na pierwszym planie trafia do kafelka 0.
+    </p>
+  </section>
+
+  <!-- ─── TRYB SIATKI ───────────────────────────────────────────────── -->
+  <section id="tryb-siatki">
+    <h2><span class="icon">▦</span>Tryb siatki (Grid)</h2>
+    <p>
+      Tryb siatki dzieli <em>obszar roboczy</em> docelowego monitora (bez paska zadań)
+      na jednolitą siatkę N×M i umieszcza w niej po jednym oknie na kafelek,
+      w kolejności wierszami (od lewej do prawej, od góry do dołu).
+    </p>
+
+    <div class="layout-diagram">
+      <div class="col">
+        <div class="tile yellow">1</div>
+        <div class="tile yellow">3</div>
+      </div>
+      <div class="col">
+        <div class="tile yellow">2</div>
+        <div class="tile yellow">4</div>
+      </div>
+    </div>
+
+    <p><em>Przykład: siatka 2×2 z czterema oknami.</em></p>
+
+    <p>
+      Jeśli liczba zaznaczonych okien jest mniejsza niż łączna liczba kafelków,
+      używane są tylko pierwsze N komórek, pozostałe są puste. Nadmiarowe okna
+      są pomijane (wyświetlane jako <em>pominięte</em> w pasku stanu).
+    </p>
+    <p>
+      Przerwa między kafelkami wynosi <code>window_gap_px</code> pikseli
+      (konfigurowane w <a href="#plik-ustawien"><code>settings.ini</code></a>).
+      Ustaw <code>0</code> dla układu bez przerw.
+    </p>
+    <p>
+      Pole <em>Szerokość prawego stosu %</em> jest wyłączone w trybie Grid i nie ma żadnego wpływu.
+    </p>
+  </section>
+
+  <!-- ─── TRYB PODZIELONY ───────────────────────────────────────────── -->
+  <section id="tryb-podzielony">
+    <h2><span class="icon">◫</span>Tryb podzielony (Split)</h2>
+    <p>
+      Tryb podzielony dzieli monitor na <strong>lewą kolumnę</strong> (siatkę kafelków)
+      i <strong>prawą kolumnę</strong> (jeden obszar stosowy). Każde okno kandydatów
+      trafia na odpowiednią stronę na podstawie dopasowania wzorców.
+    </p>
+
+    <div class="layout-diagram">
+      <div class="col">
+        <div class="tile yellow">Lewy 1</div>
+        <div class="tile yellow">Lewy 2</div>
+      </div>
+      <div class="col">
+        <div class="tile yellow">Lewy 3</div>
+        <div class="tile yellow">Lewy 4</div>
+      </div>
+      <div class="col narrow">
+        <div class="tile blue">Prawy</div>
+      </div>
+    </div>
+
+    <p><em>Przykład: Split 2×2 z 4 kafelkami po lewej i 1 stosem po prawej.</em></p>
+
+    <h3>Logika przypisywania</h3>
+    <ul>
+      <li>
+        Okna pasujące do wzorców <strong>Lewy tytuł</strong> lub <strong>Lewy proces</strong>
+        trafiają do siatki lewej kolumny (N×M kafelków).
+      </li>
+      <li>
+        Okna pasujące do wzorców <strong>Prawy tytuł</strong> lub <strong>Prawy proces</strong>
+        układają się jeden na drugim w prawej kolumnie (ostatnie na wierzchu).
+      </li>
+      <li>
+        Okno może pasować do obu stron — pojawi się po obu, jeśli pasuje do obu wzorców.
+        Pusty wzorzec pasuje do wszystkich okien po tej stronie.
+      </li>
+    </ul>
+
+    <h3>Szerokość prawego stosu</h3>
+    <p>
+      Pole <strong>Szerokość prawego stosu %</strong> określa, jaki procent szerokości
+      monitora zajmuje prawa kolumna. Zakres: <strong>20–80%</strong>.
+      Lewa kolumna zajmuje resztę. Np. wartość <code>33</code> daje prawej kolumnie 1/3,
+      a lewej 2/3 monitora.
+    </p>
+
+    <div class="tip">
+      <strong>Wskazówka</strong>
+      Podgląd układu w Edytorze presetów aktualizuje się na żywo podczas zmiany pól
+      i pokazuje etykiety wywiedzione z Twoich własnych wzorców.
+    </div>
+  </section>
+
+  <!-- ─── ZAKRES WYBORU ─────────────────────────────────────────────── -->
+  <section id="zakres-wyboru">
+    <h2><span class="icon">🎯</span>Zakres wyboru</h2>
+    <p>
+      <em>Zakres wyboru</em> określa, które okna preset traktuje jako kandydatów wejściowych:
+    </p>
+    <table>
+      <tr><th>Zakres</th><th>Opis</th></tr>
+      <tr>
+        <td><strong>Zaznaczone wiersze</strong></td>
+        <td>Tylko wiersze aktualnie zaznaczone (podświetlone) na liście okien. Domyślny dla większości presetów — daje precyzyjną kontrolę ręczną.</td>
+      </tr>
+      <tr>
+        <td><strong>Wszystkie widoczne wiersze</strong></td>
+        <td>Wszystkie wiersze widoczne na liście po zastosowaniu <a href="#filtry">filtrów</a>. Przydatny do szybkiego kafelkowania przefiltrowanego podzbioru.</td>
+      </tr>
+      <tr>
+        <td><strong>Wszystkie wykryte okna</strong></td>
+        <td>Każde okno, które przeszło wstępną enumerację, niezależnie od filtrów i zaznaczenia. Najszerszy zakres.</td>
+      </tr>
+    </table>
+
+    <h3>Globalne zastąpienie zakresu</h3>
+    <p>
+      Dropdown <strong>Globalne zastąpienie zakresu</strong> w <a href="#zakladki">zakładce Reguły</a>
+      zastępuje indywidualne ustawienie zakresu każdego presetu. Ustaw
+      <em>Śledź preset</em> (domyślnie), aby każdy preset używał własnego zakresu.
+    </p>
+  </section>
+
+  <!-- ─── WARUNKI AKTYWACJI ─────────────────────────────────────────── -->
+  <section id="warunki-aktywacji">
+    <h2><span class="icon">🔒</span>Warunki aktywacji</h2>
+    <p>
+      Preset może być ograniczony do określonych konfiguracji monitora. Gdy warunki
+      nie są spełnione, przycisk presetu i pozycja w menu zasobnika są wyszarzone,
+      a próba zastosowania wyświetla tylko komunikat wyjaśniający w pasku stanu.
+    </p>
+    <table>
+      <tr><th>Warunek</th><th>Opis</th></tr>
+      <tr>
+        <td><strong>Wymagaj zewnętrznego monitora</strong></td>
+        <td>Preset jest aktywny tylko gdy podłączony jest co najmniej jeden monitor niebędący podstawowym.</td>
+      </tr>
+      <tr>
+        <td><strong>Klasa rozdzielczości</strong></td>
+        <td>
+          Ogranicza preset do monitorów określonej klasy rozdzielczości.
+          Zobacz <a href="#klasy-rozdzielczosci">Klasy rozdzielczości</a>.
+          Ustaw <em>Dowolna</em>, aby ignorować rozdzielczość.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Monitor (urządzenie)</strong></td>
+        <td>
+          Opcjonalny <a href="#wzorce">wzorzec</a> dopasowywany do nazwy urządzenia monitora
+          (np. <code>\\.\DISPLAY2</code>). Zostaw puste dla dowolnego urządzenia.
+          Pierwszym monitorem spełniającym wszystkie warunki staje się cel presetu.
+        </td>
+      </tr>
+    </table>
+    <p>
+      Gdy wszystkie trzy warunki mają wartości domyślne (zewnętrzny odznaczony,
+      klasa = Dowolna, urządzenie puste), preset trafia na monitor podstawowy
+      i jest zawsze aktywny.
+    </p>
+    <div class="note">
+      <strong>Uwaga</strong>
+      Wszystkie trzy warunki muszą być spełnione jednocześnie. Jeśli pierwszy monitor
+      na liście nie pasuje, sprawdzany jest następny itd.
+    </div>
+  </section>
+
+  <!-- ─── SKRÓTY KLAWISZOWE ─────────────────────────────────────────── -->
+  <section id="skroty">
+    <h2><span class="icon">⌨️</span>Skróty klawiszowe</h2>
+    <p>
+      Każdy preset może mieć globalny skrót klawiszowy, który stosuje go z dowolnej
+      aplikacji, nawet gdy WindowLayouter jest zminimalizowany w zasobniku.
+    </p>
+    <h3>Format</h3>
+    <p>Skróty mają format: <code>Modifier+…+Klawisz</code></p>
+    <table>
+      <tr><th>Składnik</th><th>Dopuszczalne wartości</th></tr>
+      <tr><td>Modifier</td><td><code>Ctrl</code>, <code>Control</code>, <code>Alt</code>, <code>Shift</code>, <code>Win</code>, <code>Windows</code></td></tr>
+      <tr><td>Klawisz</td><td>Litera <code>A</code>–<code>Z</code>, cyfra <code>0</code>–<code>9</code> lub klawisz funkcyjny <code>F1</code>–<code>F24</code></td></tr>
+    </table>
+    <h3>Przykłady</h3>
+    <pre>Ctrl+Alt+1
+Ctrl+Alt+F2
+Win+Shift+T</pre>
+    <p>
+      Skróty są rejestrowane przy starcie i ponownie po każdym zapisaniu presetu.
+      Jeśli rejestracja się nie powiedzie (inna aplikacja już używa tej kombinacji),
+      skrót jest cicho wyłączany.
+    </p>
+    <p>
+      Aby usunąć skrót, wyczyść pole <em>Skrót klawiszowy</em> w Edytorze presetów i zapisz.
+    </p>
+    <div class="note">
+      <strong>Uwaga</strong>
+      Windows wymaga co najmniej jednego klawisza modyfikującego — samotne klawisze
+      takie jak <code>F2</code> nie mogą być zarejestrowane jako globalny skrót.
+    </div>
+  </section>
+
+  <!-- ─── POLA EDYTORA ──────────────────────────────────────────────── -->
+  <section id="pola-edytora">
+    <h2><span class="icon">✏️</span>Edytor presetów — pola</h2>
+    <p>
+      Otwórz Edytor presetów z paska narzędzi lub zasobnika. Wybierz preset z listy
+      po lewej, edytuj pola w centrum i obserwuj podgląd na żywo po prawej.
+    </p>
+    <table>
+      <tr><th>Pole</th><th>Opis</th></tr>
+      <tr><td><strong>Nazwa presetu</strong></td><td>Nazwa wyświetlana w zakładce Presety. Wymagana — nie można zapisać gdy jest pusta.</td></tr>
+      <tr><td><strong>Skrót klawiszowy</strong></td><td>Globalny skrót. Zobacz <a href="#skroty">Skróty klawiszowe</a>. Zostaw puste, aby wyłączyć.</td></tr>
+      <tr><td><strong>Etykieta zasobnika</strong></td><td>Krótka etykieta w menu zasobnika. Gdy pusta, używana jest nazwa presetu.</td></tr>
+      <tr><td><strong>Etykieta paska</strong></td><td>Krótka etykieta na przycisku paska narzędzi. Gdy pusta, używana jest nazwa presetu.</td></tr>
+      <tr><td><strong>Zakres wyboru</strong></td><td>Które okna uwzględnić. Zobacz <a href="#zakres-wyboru">Zakres wyboru</a>.</td></tr>
+      <tr><td><strong>Tryb</strong></td><td>Grid lub Split. Zobacz <a href="#tryb-siatki">Tryb siatki</a> / <a href="#tryb-podzielony">Tryb podzielony</a>.</td></tr>
+      <tr><td><strong>Klasa rozdzielczości</strong></td><td>Wymagana klasa monitora. Zobacz <a href="#klasy-rozdzielczosci">Klasy rozdzielczości</a>.</td></tr>
+      <tr><td><strong>Monitor (urządzenie)</strong></td><td>Wzorzec dopasowywany do nazwy urządzenia monitora. Zostaw <em>Dowolna</em> bez ograniczeń.</td></tr>
+      <tr><td><strong>Kolumny / Wiersze siatki</strong></td><td>Wymiary siatki kafelków (minimum 1×1). Używane w trybie Grid i lewej kolumnie Split.</td></tr>
+      <tr><td><strong>Szerokość prawego stosu %</strong></td><td>Procent szerokości monitora dla prawej kolumny w trybie Split (20–80). Wyłączone w trybie Grid.</td></tr>
+      <tr><td><strong>Lewy tytuł / Lewy proces</strong></td><td>Wzorce kierujące okna do lewej siatki w trybie Split.</td></tr>
+      <tr><td><strong>Prawy tytuł / Prawy proces</strong></td><td>Wzorce kierujące okna do prawego stosu w trybie Split.</td></tr>
+      <tr><td><strong>Wymagaj zewnętrznego monitora</strong></td><td>Blokuje preset gdy nie ma podłączonego monitora niebędącego podstawowym.</td></tr>
+      <tr><td><strong>Pokaż w zasobniku</strong></td><td>Uwzględnia ten preset w menu kontekstowym zasobnika.</td></tr>
+      <tr><td><strong>Pokaż jako przycisk paska</strong></td><td>Wyświetla przycisk presetu na pasku narzędzi okna głównego.</td></tr>
+    </table>
+  </section>
+
+  <!-- ─── ZAPISZ VS ZASTOSUJ ────────────────────────────────────────── -->
+  <section id="zapisz-vs-zastosuj">
+    <h2><span class="icon">💾</span>Zapisz vs Zastosuj</h2>
+    <p>Edytor presetów ma dwa przyciski akcji:</p>
+    <table>
+      <tr><th>Przycisk</th><th>Co robi</th></tr>
+      <tr>
+        <td><strong>Zapisz preset</strong></td>
+        <td>
+          Waliduje i zapisuje wartości formularza do pamięci i do <code>settings.ini</code>.
+          Aktualizuje listę presetów, przyciski paska i rejestracje skrótów.
+          Nie przesuwa żadnych okien.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Zastosuj preset</strong></td>
+        <td>
+          Najpierw zapisuje (jak <em>Zapisz preset</em>), a następnie natychmiast stosuje
+          preset — przesuwa okna na docelowym monitorze. Odpowiednik zapisania i kliknięcia
+          przycisku na pasku narzędzi.
+        </td>
+      </tr>
+    </table>
+    <div class="tip">
+      <strong>Wskazówka</strong>
+      Używaj <strong>Zastosuj preset</strong> podczas konfiguracji, aby widzieć układ
+      na żywo podczas dostrajania kolumn, wierszy i szerokości bez opuszczania edytora.
+    </div>
+  </section>
+
+  <!-- ─── WZORCE ────────────────────────────────────────────────────── -->
+  <section id="wzorce">
+    <h2><span class="icon">✳️</span>Wzorce wieloznaczne</h2>
+    <p>
+      Pola filtrów, pola Lewy/Prawy proces i tytuł oraz pole Monitor (urządzenie)
+      obsługują dwa znaki wieloznaczne:
+    </p>
+    <table>
+      <tr><th>Znak</th><th>Znaczenie</th></tr>
+      <tr><td><code>*</code></td><td>Dopasowuje dowolny ciąg znaków (w tym pusty).</td></tr>
+      <tr><td><code>?</code></td><td>Dopasowuje dokładnie jeden znak.</td></tr>
+    </table>
+    <p>Dopasowywanie jest <strong>bez rozróżniania wielkości liter</strong>.</p>
+    <h3>Przykłady</h3>
+    <table>
+      <tr><th>Wzorzec</th><th>Pasuje do</th></tr>
+      <tr><td><code>*chrome*</code></td><td>Dowolnego ciągu zawierającego „chrome".</td></tr>
+      <tr><td><code>chrome.exe</code></td><td>Dokładnie „chrome.exe" (bez znaków wieloznacznych).</td></tr>
+      <tr><td><code>*Antigravity*</code></td><td>Dowolnego tytułu okna zawierającego „Antigravity".</td></tr>
+      <tr><td><code>raport_202?.pdf</code></td><td>Np. „raport_2024.pdf", ale nie „raport_20244.pdf".</td></tr>
+    </table>
+    <div class="note">
+      <strong>Uwaga o wydajności</strong>
+      Wzorce są ograniczone do maksymalnie <strong>2 gwiazdek</strong>, aby zapobiec
+      wykładniczemu cofaniu się przy złożonych wzorcach. Wzorzec z 3 lub więcej
+      znakami <code>*</code> nigdy niczego nie dopasuje.
+    </div>
+  </section>
+
+  <!-- ─── KLASY ROZDZIELCZOŚCI ─────────────────────────────────────── -->
+  <section id="klasy-rozdzielczosci">
+    <h2><span class="icon">🖥️</span>Klasy rozdzielczości</h2>
+    <p>
+      Klasy rozdzielczości to szerokie kategorie monitorów używane jako
+      <a href="#warunki-aktywacji">warunki aktywacji</a>. Klasyfikują monitor
+      według fizycznej liczby pikseli, poprawnie obsługując monitory obrócone pionowo.
+    </p>
+    <table>
+      <tr><th>Klasa</th><th>Przybliżona rozdzielczość</th><th>Próg pikseli</th></tr>
+      <tr><td><strong>Dowolna</strong></td><td>Bez ograniczeń</td><td>—</td></tr>
+      <tr><td><strong>2K</strong></td><td>2560×1440 (QHD)</td><td>≥ 2500×1400 (poziomo)</td></tr>
+      <tr><td><strong>2.5K</strong></td><td>2560×1600</td><td>≥ 2500×1550 (poziomo)</td></tr>
+      <tr><td><strong>4K</strong></td><td>3840×2160 (UHD)</td><td>≥ 3800×2100 (poziomo)</td></tr>
+    </table>
+    <p>
+      Progi są celowo zaokrąglone — celem jest szerokie dopasowanie kategorii,
+      a nie precyzyjna identyfikacja panelu. Monitor 2560×1600 klasyfikowany jest
+      jako <em>2.5K</em>, a nie <em>2K</em>, ponieważ 1600 &gt; 1550.
+    </p>
+    <div class="tip">
+      <strong>Wskazówka</strong>
+      Wykrytą klasę rozdzielczości monitora możesz sprawdzić w
+      <a href="#zakladki">zakładce Monitory</a>.
+    </div>
+  </section>
+
+  <!-- ─── ZASOBNIK SYSTEMOWY ───────────────────────────────────────── -->
+  <section id="zasobnik">
+    <h2><span class="icon">📥</span>Zasobnik systemowy</h2>
+    <p>
+      WindowLayouter umieszcza ikonę w obszarze powiadomień systemu Windows (zasobniku).
+    </p>
+    <table>
+      <tr><th>Akcja</th><th>Efekt</th></tr>
+      <tr><td>Podwójne kliknięcie ikony</td><td>Pokazuje okno główne i przenosi je na pierwszy plan.</td></tr>
+      <tr><td>Prawy przycisk myszy na ikonie</td><td>Otwiera menu kontekstowe.</td></tr>
+    </table>
+    <h3>Pozycje menu kontekstowego</h3>
+    <ul>
+      <li><strong>Pokaż</strong> — przenosi okno główne na pierwszy plan.</li>
+      <li><strong>Edytor presetów</strong> — otwiera okno Edytora presetów.</li>
+      <li><strong>O programie</strong> — otwiera okno dialogowe informacji o programie.</li>
+      <li><strong>Ukryj w zasobniku</strong> — ukrywa okno główne (program działa w tle).</li>
+      <li><em>Skróty presetów</em> — jedna pozycja na preset z włączoną opcją <em>Pokaż w zasobniku</em>, z pokazanym skrótem klawiszowym w nawiasach. Wyszarzone gdy wymagany monitor jest odłączony.</li>
+      <li><strong>Zakończ</strong> — całkowicie zamyka WindowLayouter.</li>
+    </ul>
+    <div class="note">
+      <strong>Uwaga</strong>
+      Zamknięcie okna głównego przyciskiem × chowa je w zasobniku, a nie kończy program.
+      Użyj pozycji <em>Zakończ</em> w menu zasobnika, aby zakończyć proces.
+    </div>
+  </section>
+
+  <!-- ─── PLIK USTAWIEŃ ─────────────────────────────────────────────── -->
+  <section id="plik-ustawien">
+    <h2><span class="icon">📄</span>Plik ustawień</h2>
+    <p>Wszystkie ustawienia są zapisywane w pliku tekstowym INI:</p>
+    <pre>%LOCALAPPDATA%\WindowLayouter.Native\settings.ini</pre>
+    <p>
+      Plik jest tworzony automatycznie przy pierwszym uruchomieniu z wartościami
+      domyślnymi. Jest zapisywany automatycznie przy każdej zmianie ustawienia
+      (zmiana języka, zakresu, zapisanie presetu, zamknięcie okna).
+    </p>
+    <h3>Format pliku</h3>
+    <p>
+      Standardowy format INI: nagłówki <code>[Sekcja]</code>, pary <code>klucz=wartość</code>.
+      Komentarze wbudowane zaczynają się od <code>//</code> i są pomijane przy odczycie.
+    </p>
+    <pre>[Window]
+left=100
+top=100
+width=1760
+height=1040
+tab=1                  // Aktywna zakładka: 0=Monitory, 1=Presety, 2=Reguły
+window_gap_px=4        // Przerwa między kafelkami w pikselach
+
+[App]
+language=pl
+selection_scope_override=Śledź preset
+
+[Hotkeys]
+PresetGrid2x2=Ctrl+Alt+1
+...
+
+[Preset0]
+name=4K > 2x2
+kind=Grid
+columns=2
+rows=2
+require_external_monitor=1
+required_resolution_class=4K
+...</pre>
+    <div class="note">
+      <strong>Uwaga</strong>
+      Możesz edytować <code>settings.ini</code> bezpośrednio w edytorze tekstu.
+      Pliki językowe są przeładowywane automatycznie po zmianie na dysku
+      (interwał sprawdzania: 1,5 s), ale zmiany w <code>settings.ini</code>
+      wymagają restartu programu.
+    </div>
+  </section>
+
+  <!-- ─── JĘZYK ─────────────────────────────────────────────────────── -->
+  <section id="jezyk">
+    <h2><span class="icon">🌐</span>Język</h2>
+    <p>
+      Język interfejsu jest ładowany w czasie działania z pliku w folderze
+      <code>lang\</code> obok <code>WindowLayouter.exe</code>:
+    </p>
+    <pre>lang\en.ini    ← angielski (domyślny)
+lang\pl.ini    ← polski</pre>
+    <p>
+      Zmień język za pomocą dropdownu <strong>Język</strong> w <a href="#zakladki">zakładce Reguły</a>.
+      Zmiana jest natychmiastowa we wszystkich oknach, łącznie z Edytorem presetów.
+      Pliki językowe są monitorowane — edycja pliku jest widoczna bez restartu.
+    </p>
+    <h3>Dodawanie języka</h3>
+    <p>
+      Skopiuj <code>lang\en.ini</code>, nazwij plik <code>lang\<em>kod</em>.ini</code>
+      (np. <code>lang\de.ini</code>) i przetłumacz wartości. Plik musi być zapisany
+      jako <strong>UTF-8</strong> (z BOM lub bez). Po restarcie nowy język będzie
+      dostępny w dropdownie.
+    </p>
+    <div class="note">
+      <strong>Uwaga</strong>
+      Jeśli wybrany plik językowy nie zostanie znaleziony, program cicho powróci do
+      <code>lang\en.ini</code>. Jeśli ten plik też jest niedostępny, używane są
+      wbudowane angielskie ciągi zastępcze.
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  const links = Array.from(document.querySelectorAll('nav a[href^="#"]'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+  function getActive() {
+    const viewH = window.innerHeight;
+    let best = null, bestScore = -Infinity;
+    sections.forEach((sec, i) => {
+      const r = sec.getBoundingClientRect();
+      const visible = Math.max(0, Math.min(r.bottom, viewH) - Math.max(r.top, 0));
+      const score = visible - Math.max(0, r.top) * 0.1;
+      if (score > bestScore) { bestScore = score; best = i; }
+    });
+    return best;
+  }
+
+  function update() {
+    const idx = getActive();
+    links.forEach((a, i) => a.classList.toggle('active', i === idx));
+  }
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) { requestAnimationFrame(() => { update(); ticking = false; }); ticking = true; }
+  }, { passive: true });
+
+  update();
+})();
+</script>
+</body>
+</html>

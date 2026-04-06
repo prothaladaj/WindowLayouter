@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WindowLayouter — Help</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --accent:      #3b74d8;
+    --accent-dim:  #d0e0ff;
+    --bg:          #f8f9fb;
+    --surface:     #ffffff;
+    --border:      #e2e6ed;
+    --text:        #1e2128;
+    --text-muted:  #5a6275;
+    --code-bg:     #f0f2f5;
+    --nav-width:   270px;
+    --nav-bg:      #f0f2f6;
+    --nav-active:  #3b74d8;
+    --note-bg:     #fffbe6;
+    --note-border: #f0c040;
+    --tip-bg:      #eaf3ff;
+    --tip-border:  #7db0f0;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    display: flex;
+  }
+
+  /* ── NAV SIDEBAR ─────────────────────────────────────────────────────── */
+  nav {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--nav-width);
+    height: 100vh;
+    background: var(--nav-bg);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+
+  nav .nav-header {
+    padding: 22px 20px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  nav .nav-header span {
+    display: block;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: none;
+    letter-spacing: 0;
+    margin-bottom: 2px;
+  }
+
+  nav ul {
+    list-style: none;
+    padding: 10px 0 24px;
+  }
+
+  nav ul li a {
+    display: block;
+    padding: 5px 20px 5px 20px;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: color .15s, background .15s, border-color .15s;
+    line-height: 1.5;
+  }
+
+  nav ul li a:hover {
+    color: var(--text);
+    background: rgba(0,0,0,.04);
+  }
+
+  nav ul li a.active {
+    color: var(--nav-active);
+    border-left-color: var(--nav-active);
+    background: var(--accent-dim);
+    font-weight: 600;
+  }
+
+  nav ul li.section-label {
+    padding: 14px 20px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #9aa2b4;
+  }
+
+  /* ── MAIN CONTENT ────────────────────────────────────────────────────── */
+  main {
+    margin-left: var(--nav-width);
+    max-width: 860px;
+    padding: 56px 60px 100px;
+    flex: 1;
+  }
+
+  /* ── TYPOGRAPHY ──────────────────────────────────────────────────────── */
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -.3px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    color: var(--text-muted);
+    margin-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+  }
+
+  section {
+    margin-bottom: 64px;
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    padding-top: 8px;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  h2 .icon {
+    font-size: 20px;
+    opacity: .75;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 28px 0 10px;
+  }
+
+  p { margin-bottom: 14px; color: var(--text); }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  ul, ol {
+    margin: 0 0 16px 20px;
+  }
+
+  li { margin-bottom: 5px; }
+
+  code {
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: #c7254e;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 18px;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 13px;
+    overflow-x: auto;
+    margin: 0 0 18px;
+    line-height: 1.6;
+  }
+
+  /* ── CALLOUT BOXES ───────────────────────────────────────────────────── */
+  .note, .tip {
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .note {
+    background: var(--note-bg);
+    border-left: 4px solid var(--note-border);
+  }
+
+  .tip {
+    background: var(--tip-bg);
+    border-left: 4px solid var(--tip-border);
+  }
+
+  .note strong, .tip strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    opacity: .7;
+  }
+
+  /* ── KEY BADGE ───────────────────────────────────────────────────────── */
+  kbd {
+    display: inline-block;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    background: #fff;
+    border: 1px solid #bcc2ce;
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+
+  /* ── TABLE ───────────────────────────────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--nav-bg);
+    border: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  td {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td { background: #fafbfc; }
+
+  /* ── LAYOUT DIAGRAM ─────────────────────────────────────────────────── */
+  .layout-diagram {
+    display: flex;
+    gap: 6px;
+    background: #e8edf4;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 18px 0;
+    height: 120px;
+    border: 1px solid var(--border);
+  }
+
+  .layout-diagram .col { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .layout-diagram .col.narrow { flex: 0 0 30%; }
+
+  .tile {
+    flex: 1;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .tile.yellow { background: #ffd87a; border: 1px solid #e8b830; }
+  .tile.blue   { background: #8099e8; border: 1px solid #5b7dd4; color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ SIDEBAR -->
+<nav>
+  <div class="nav-header">
+    <span>WindowLayouter</span>
+    Help &amp; Reference
+  </div>
+  <ul>
+    <li class="section-label">Getting started</li>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#quickstart">Quick start</a></li>
+
+    <li class="section-label">Main window</li>
+    <li><a href="#toolbar">Toolbar</a></li>
+    <li><a href="#window-list">Window list</a></li>
+    <li><a href="#filters">Filters</a></li>
+    <li><a href="#tabs">Tabs</a></li>
+
+    <li class="section-label">Presets</li>
+    <li><a href="#presets-intro">What is a preset?</a></li>
+    <li><a href="#grid-mode">Grid mode</a></li>
+    <li><a href="#split-mode">Split mode</a></li>
+    <li><a href="#selection-scope">Selection scope</a></li>
+    <li><a href="#activation">Activation conditions</a></li>
+    <li><a href="#hotkeys">Hotkeys</a></li>
+
+    <li class="section-label">Preset editor</li>
+    <li><a href="#editor-fields">Editor fields</a></li>
+    <li><a href="#save-vs-apply">Save vs Apply</a></li>
+
+    <li class="section-label">Reference</li>
+    <li><a href="#wildcards">Wildcard patterns</a></li>
+    <li><a href="#resolution-classes">Resolution classes</a></li>
+    <li><a href="#system-tray">System tray</a></li>
+    <li><a href="#settings-file">Settings file</a></li>
+    <li><a href="#language">Language</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════ CONTENT -->
+<main>
+  <h1>WindowLayouter</h1>
+  <p class="subtitle">Monitor-aware window layout manager — Help &amp; Reference</p>
+
+  <!-- ─── OVERVIEW ─────────────────────────────────────────────────── -->
+  <section id="overview">
+    <h2><span class="icon">📐</span>Overview</h2>
+    <p>
+      WindowLayouter is a lightweight Windows utility that arranges open application
+      windows into predefined tile layouts on a target monitor. Layouts are described
+      as <em>presets</em>: each preset encodes the grid shape, which windows to include,
+      and on which monitor to apply them. Presets can be triggered from the toolbar,
+      the system tray, or a global hotkey.
+    </p>
+    <p>Key capabilities:</p>
+    <ul>
+      <li>Grid tiling — divide the monitor work area into an N×M grid and fill it with selected windows.</li>
+      <li>Split tiling — separate windows into a tiled left column and a right stack by process/title pattern.</li>
+      <li>Per-preset activation guards — restrict a preset to a specific monitor resolution class or device.</li>
+      <li>Global hotkeys — apply any preset without switching focus.</li>
+      <li>Live language switching — UI labels are loaded from external <code>.ini</code> files at runtime.</li>
+      <li>Single-instance design — a second launch brings the existing window to the front.</li>
+    </ul>
+  </section>
+
+  <!-- ─── QUICK START ───────────────────────────────────────────────── -->
+  <section id="quickstart">
+    <h2><span class="icon">🚀</span>Quick start</h2>
+    <ol>
+      <li>Launch <code>WindowLayouter.exe</code>. The app starts in the main window and adds a tray icon.</li>
+      <li>Select one or more rows in the <a href="#window-list">window list</a>.</li>
+      <li>Click a preset button in the toolbar (e.g. <strong>4K &gt; 2×2</strong>).</li>
+      <li>The selected windows are rearranged on the target monitor instantly.</li>
+    </ol>
+    <div class="tip">
+      <strong>Tip</strong>
+      If the preset buttons are greyed out, the required monitor is not connected.
+      See <a href="#activation">Activation conditions</a> for details.
+    </div>
+    <p>
+      To customise hotkeys, patterns or grid dimensions, open the
+      <a href="#editor-fields">Preset Editor</a> from the toolbar or the tray menu.
+      Settings are saved automatically to <a href="#settings-file"><code>settings.ini</code></a>.
+    </p>
+  </section>
+
+  <!-- ─── TOOLBAR ──────────────────────────────────────────────────── -->
+  <section id="toolbar">
+    <h2><span class="icon">🔧</span>Toolbar</h2>
+    <p>The toolbar runs along the top of the main window and contains:</p>
+    <table>
+      <tr><th>Button</th><th>Action</th></tr>
+      <tr><td><strong>Refresh</strong></td><td>Re-enumerate all open windows and connected monitors. Use this after opening or closing applications.</td></tr>
+      <tr><td><strong>Clear Selection</strong></td><td>Deselect all rows in the window list.</td></tr>
+      <tr><td><strong>Apply Selected Preset</strong></td><td>Apply whichever preset is currently highlighted in the <em>Presets</em> tab or the Preset Editor. Disabled when the preset's required monitor is absent.</td></tr>
+      <tr><td><em>Preset buttons</em></td><td>Each active preset that has <em>Show as toolbar button</em> enabled appears here. Click to apply that preset immediately. Greyed-out buttons indicate an inactive preset.</td></tr>
+      <tr><td><strong>Preset Editor</strong></td><td>Open the Preset Editor window.</td></tr>
+    </table>
+    <div class="note">
+      <strong>Note</strong>
+      Preset buttons are hidden when the preset has <em>Show as toolbar button</em> unchecked in the editor.
+    </div>
+  </section>
+
+  <!-- ─── WINDOW LIST ───────────────────────────────────────────────── -->
+  <section id="window-list">
+    <h2><span class="icon">🗂️</span>Window list</h2>
+    <p>
+      The list on the left side of the main window shows all discovered top-level
+      application windows. Each row represents one window with its title, process name,
+      window class, monitor device name, and HWND (hexadecimal handle).
+    </p>
+    <h3>Selection</h3>
+    <p>
+      Click a row to select it. Hold <kbd>Ctrl</kbd> to add rows, hold <kbd>Shift</kbd>
+      to extend the range. There are no checkboxes — standard list-view multi-select applies.
+      The selection determines which windows a preset with <em>Selected rows</em> scope
+      will act on.
+    </p>
+    <h3>Sorting</h3>
+    <p>
+      Click any column header to sort by that column. Click again to reverse the order.
+      Sorting is alphabetical for text columns and numeric for the HWND column.
+    </p>
+    <h3>Filtering</h3>
+    <p>
+      Use the <a href="#filters">filter fields</a> above the list to narrow down which
+      windows are shown. Filtering does not change the full window set — it only controls
+      what is visible and therefore what <em>All visible rows</em> scope will act on.
+    </p>
+    <h3>Excluded windows</h3>
+    <p>The following windows are never shown in the list:</p>
+    <ul>
+      <li>Windows without a title.</li>
+      <li>Tool windows (<code>WS_EX_TOOLWINDOW</code>) and no-activate windows.</li>
+      <li>Cloaked windows (e.g. UWP apps on inactive virtual desktops).</li>
+      <li>Very small windows — narrower than 60 px or shorter than 40 px.</li>
+      <li>Shell internals: <code>Progman</code>, <code>WorkerW</code>, <code>Shell_TrayWnd</code>.</li>
+    </ul>
+  </section>
+
+  <!-- ─── FILTERS ──────────────────────────────────────────────────── -->
+  <section id="filters">
+    <h2><span class="icon">🔍</span>Filters</h2>
+    <p>
+      Two filter fields sit above the window list: <strong>Title</strong> and
+      <strong>Process</strong>. Both support <a href="#wildcards">wildcard patterns</a>.
+      Filtering is live — the list updates on every keystroke.
+    </p>
+    <table>
+      <tr><th>Field</th><th>Matches against</th><th>Example</th></tr>
+      <tr><td>Title</td><td>Window title text</td><td><code>*Messenger*</code></td></tr>
+      <tr><td>Process</td><td>Executable file name (basename)</td><td><code>*chrome*</code></td></tr>
+    </table>
+    <p>
+      Leaving a filter field empty means <em>match everything</em> — no filtering on
+      that field. Both filters are applied simultaneously (AND logic).
+    </p>
+    <div class="tip">
+      <strong>Tip</strong>
+      Combine both filters to isolate a specific window precisely. For example,
+      <code>Title: *Meeting*</code> + <code>Process: *teams*</code> shows only
+      Teams windows whose title contains "Meeting".
+    </div>
+  </section>
+
+  <!-- ─── TABS ─────────────────────────────────────────────────────── -->
+  <section id="tabs">
+    <h2><span class="icon">📑</span>Tabs</h2>
+    <p>The right panel of the main window contains three tabs.</p>
+
+    <h3>Monitors</h3>
+    <p>
+      Displays a text dump of every monitor detected by the system, including device name
+      (e.g. <code>\\.\DISPLAY1</code>), pixel bounds, work area, resolution class, DPI
+      and whether it is the primary display. The path to <code>settings.ini</code> is
+      shown at the top for quick reference.
+    </p>
+
+    <h3>Presets</h3>
+    <p>
+      Shows a summary of all defined presets: their tray label, toolbar label,
+      <a href="#selection-scope">selection scope</a>,
+      <a href="#activation">activation status</a> and layout description.
+      Use this tab to review the current preset configuration at a glance.
+      To edit presets, click <strong>Open Preset Editor</strong>.
+    </p>
+
+    <h3>Rules</h3>
+    <p>
+      Contains two controls and a reference text panel:
+    </p>
+    <ul>
+      <li>
+        <strong>App Selection Override</strong> — a global override that replaces every
+        preset's individual <a href="#selection-scope">Selection scope</a> with one
+        fixed mode. Set to <em>Follow preset</em> to let each preset use its own setting.
+      </li>
+      <li>
+        <strong>Language</strong> — switch the UI language. See <a href="#language">Language</a>.
+      </li>
+    </ul>
+    <p>
+      The text area below explains selection, filtering, layout, activation, spacing and
+      ordering rules — it mirrors the content of this help file in condensed form.
+    </p>
+  </section>
+
+  <!-- ─── PRESETS INTRO ─────────────────────────────────────────────── -->
+  <section id="presets-intro">
+    <h2><span class="icon">🎛️</span>What is a preset?</h2>
+    <p>
+      A preset is a named layout recipe. When you apply a preset, WindowLayouter:
+    </p>
+    <ol>
+      <li>Refreshes the window and monitor lists.</li>
+      <li>Verifies that the preset's <a href="#activation">activation conditions</a> are met.</li>
+      <li>Collects candidate windows according to the <a href="#selection-scope">selection scope</a>.</li>
+      <li>Arranges those windows using the preset's <a href="#grid-mode">Grid</a> or <a href="#split-mode">Split</a> layout.</li>
+    </ol>
+    <p>
+      Presets are saved to <a href="#settings-file"><code>settings.ini</code></a> and
+      survive application restarts. The built-in presets can be fully customised;
+      their count is fixed at five, but all fields — name, hotkey, grid dimensions,
+      patterns and activation guards — are editable.
+    </p>
+    <p>
+      Window ordering within a layout follows the system z-order (front-to-back) after
+      pattern filtering — the frontmost matching window goes into tile 0.
+    </p>
+  </section>
+
+  <!-- ─── GRID MODE ─────────────────────────────────────────────────── -->
+  <section id="grid-mode">
+    <h2><span class="icon">▦</span>Grid mode</h2>
+    <p>
+      Grid mode divides the target monitor's <em>work area</em> (excluding the taskbar)
+      into a uniform N×M tile grid and places one window per tile in row-major order
+      (left to right, top to bottom).
+    </p>
+
+    <div class="layout-diagram">
+      <div class="col">
+        <div class="tile yellow">1</div>
+        <div class="tile yellow">3</div>
+      </div>
+      <div class="col">
+        <div class="tile yellow">2</div>
+        <div class="tile yellow">4</div>
+      </div>
+    </div>
+
+    <p><em>Example: 2×2 grid with four windows.</em></p>
+
+    <p>
+      If the number of selected windows is smaller than the total cell count, only the
+      first N cells are used and the rest are left empty. If there are more windows than
+      cells, the excess windows are skipped (reported as <em>skipped</em> in the status
+      bar).
+    </p>
+    <p>
+      A gap of <code>window_gap_px</code> pixels is applied around each tile (configurable
+      in <a href="#settings-file"><code>settings.ini</code></a>). Set it to <code>0</code>
+      for seamless tiling.
+    </p>
+    <p>
+      Grid columns and rows are set in the <a href="#editor-fields">Preset Editor</a>.
+      The <em>Right Stack Width %</em> field is disabled for Grid mode and has no effect.
+    </p>
+  </section>
+
+  <!-- ─── SPLIT MODE ────────────────────────────────────────────────── -->
+  <section id="split-mode">
+    <h2><span class="icon">◫</span>Split mode</h2>
+    <p>
+      Split mode divides the monitor into a <strong>left column</strong> (a tile grid)
+      and a <strong>right column</strong> (a single stacked area). Each candidate window
+      is routed to one side based on pattern matching.
+    </p>
+
+    <div class="layout-diagram">
+      <div class="col">
+        <div class="tile yellow">Left 1</div>
+        <div class="tile yellow">Left 2</div>
+      </div>
+      <div class="col">
+        <div class="tile yellow">Left 3</div>
+        <div class="tile yellow">Left 4</div>
+      </div>
+      <div class="col narrow">
+        <div class="tile blue">Right</div>
+      </div>
+    </div>
+
+    <p><em>Example: Split 2×2 with 4 left tiles and 1 right stack.</em></p>
+
+    <h3>Routing logic</h3>
+    <ul>
+      <li>
+        Windows matching <strong>Left Title</strong> or <strong>Left Process</strong> patterns
+        are placed in the left column grid (N×M tiles).
+      </li>
+      <li>
+        Windows matching <strong>Right Title</strong> or <strong>Right Process</strong> patterns
+        are all stacked on top of each other in the right column (last one on top).
+      </li>
+      <li>
+        A window can match both sides — it will appear in both if it matches both patterns.
+        Empty patterns match all windows on that side.
+      </li>
+    </ul>
+
+    <h3>Right stack width</h3>
+    <p>
+      The <strong>Right Stack Width %</strong> field controls what percentage of the
+      monitor width is given to the right column. Valid range: <strong>20–80%</strong>.
+      The left column takes the remainder. For example, a value of <code>33</code> gives
+      the right column 1/3 of the monitor and the left column 2/3.
+    </p>
+
+    <div class="tip">
+      <strong>Tip</strong>
+      The layout preview in the Preset Editor updates live as you change fields,
+      showing labels derived from your own patterns.
+    </div>
+  </section>
+
+  <!-- ─── SELECTION SCOPE ───────────────────────────────────────────── -->
+  <section id="selection-scope">
+    <h2><span class="icon">🎯</span>Selection scope</h2>
+    <p>
+      The <em>selection scope</em> controls which windows a preset treats as its
+      input candidates:
+    </p>
+    <table>
+      <tr><th>Scope</th><th>Description</th></tr>
+      <tr>
+        <td><strong>Selected rows</strong></td>
+        <td>Only the rows currently selected (highlighted) in the window list. Default for most presets — gives precise manual control.</td>
+      </tr>
+      <tr>
+        <td><strong>All visible rows</strong></td>
+        <td>Every row currently visible in the list after <a href="#filters">filter</a> application. Useful for quickly tiling a filtered subset without selecting individually.</td>
+      </tr>
+      <tr>
+        <td><strong>All discovered windows</strong></td>
+        <td>Every window that passed the initial enumeration, ignoring the filter and selection. Broadest scope — tiles everything WindowLayouter can find.</td>
+      </tr>
+    </table>
+
+    <h3>App Selection Override</h3>
+    <p>
+      The <strong>App Selection Override</strong> dropdown in the
+      <a href="#tabs">Rules tab</a> supersedes every preset's individual scope setting.
+      Set it to <em>Follow preset</em> (the default) to let each preset use its own
+      scope. Change it to one of the three modes to force all presets to use the same
+      scope globally, regardless of what the Preset Editor says.
+    </p>
+  </section>
+
+  <!-- ─── ACTIVATION ────────────────────────────────────────────────── -->
+  <section id="activation">
+    <h2><span class="icon">🔒</span>Activation conditions</h2>
+    <p>
+      A preset can be restricted to specific monitor configurations. If the conditions
+      are not met, the preset button and tray menu item are greyed out, and applying
+      the preset does nothing except display an explanatory status message.
+    </p>
+    <table>
+      <tr><th>Condition</th><th>Description</th></tr>
+      <tr>
+        <td><strong>Require external monitor</strong></td>
+        <td>The preset is only active when at least one non-primary monitor is connected. Unchecking this allows the preset to target the primary display.</td>
+      </tr>
+      <tr>
+        <td><strong>Resolution class</strong></td>
+        <td>
+          Restricts the preset to monitors of a specific resolution class.
+          See <a href="#resolution-classes">Resolution classes</a>.
+          Set to <em>Any</em> to ignore resolution.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Monitor device</strong></td>
+        <td>
+          An optional <a href="#wildcards">wildcard</a> matched against the monitor device name
+          (e.g. <code>\\.\DISPLAY2</code>). Leave blank for any device.
+          The first monitor that satisfies all conditions becomes the target.
+        </td>
+      </tr>
+    </table>
+    <p>
+      When all three conditions are set to their permissive defaults (external unchecked,
+      class = Any, device empty), the preset falls back to the primary monitor and is
+      always active.
+    </p>
+    <div class="note">
+      <strong>Note</strong>
+      All three conditions must be satisfied simultaneously. If the first monitor in
+      the system list doesn't match, the next one is tried, and so on.
+    </div>
+  </section>
+
+  <!-- ─── HOTKEYS ───────────────────────────────────────────────────── -->
+  <section id="hotkeys">
+    <h2><span class="icon">⌨️</span>Hotkeys</h2>
+    <p>
+      Each preset can have a global hotkey that applies it from any application,
+      even when WindowLayouter is minimised to the tray.
+    </p>
+    <h3>Format</h3>
+    <p>Hotkeys use the format: <code>Modifier+…+Key</code></p>
+    <table>
+      <tr><th>Component</th><th>Accepted values</th></tr>
+      <tr><td>Modifier</td><td><code>Ctrl</code>, <code>Control</code>, <code>Alt</code>, <code>Shift</code>, <code>Win</code>, <code>Windows</code></td></tr>
+      <tr><td>Key</td><td>Single letter <code>A</code>–<code>Z</code>, digit <code>0</code>–<code>9</code>, or function key <code>F1</code>–<code>F24</code></td></tr>
+    </table>
+    <h3>Examples</h3>
+    <pre>Ctrl+Alt+1
+Ctrl+Alt+F2
+Win+Shift+T</pre>
+    <p>
+      Hotkeys are registered at startup and re-registered each time you save a preset.
+      If registration fails (another app owns the same combination), the hotkey is
+      silently disabled for that preset.
+    </p>
+    <p>
+      To remove a hotkey, clear the <em>Hotkey</em> field in the Preset Editor and save.
+    </p>
+    <div class="note">
+      <strong>Note</strong>
+      At least one modifier key is implicitly required by Windows — bare keys like
+      <code>F2</code> alone cannot be registered as global hotkeys.
+    </div>
+  </section>
+
+  <!-- ─── EDITOR FIELDS ─────────────────────────────────────────────── -->
+  <section id="editor-fields">
+    <h2><span class="icon">✏️</span>Preset Editor — fields</h2>
+    <p>
+      Open the Preset Editor from the toolbar or tray. Select a preset from the list
+      on the left, edit fields in the centre, and watch the live preview on the right.
+    </p>
+    <table>
+      <tr><th>Field</th><th>Description</th></tr>
+      <tr><td><strong>Preset Name</strong></td><td>The name shown in the Presets tab summary. Required — cannot be saved empty.</td></tr>
+      <tr><td><strong>Hotkey</strong></td><td>Global hotkey string. See <a href="#hotkeys">Hotkeys</a> for format. Leave blank to disable.</td></tr>
+      <tr><td><strong>Tray Label</strong></td><td>Short label shown in the system tray menu. Falls back to the preset name if empty.</td></tr>
+      <tr><td><strong>Toolbar Label</strong></td><td>Short label shown on the main window button. Falls back to the preset name if empty.</td></tr>
+      <tr><td><strong>Selection Scope</strong></td><td>Which windows to include. See <a href="#selection-scope">Selection scope</a>.</td></tr>
+      <tr><td><strong>Mode</strong></td><td>Grid or Split. See <a href="#grid-mode">Grid mode</a> / <a href="#split-mode">Split mode</a>.</td></tr>
+      <tr><td><strong>Resolution Class</strong></td><td>Required monitor class. See <a href="#resolution-classes">Resolution classes</a>.</td></tr>
+      <tr><td><strong>Monitor Device</strong></td><td>Wildcard matched against the monitor device name. Leave as <em>Any</em> for no restriction.</td></tr>
+      <tr><td><strong>Grid Columns / Rows</strong></td><td>Tile grid dimensions (minimum 1×1). Used by both Grid and Split left-column layouts.</td></tr>
+      <tr><td><strong>Right Stack Width %</strong></td><td>Width percentage for the Split right column (20–80). Disabled for Grid mode.</td></tr>
+      <tr><td><strong>Left Title / Left Process</strong></td><td>Wildcard patterns for routing windows to the left grid in Split mode.</td></tr>
+      <tr><td><strong>Right Title / Right Process</strong></td><td>Wildcard patterns for routing windows to the right stack in Split mode.</td></tr>
+      <tr><td><strong>Require external monitor</strong></td><td>Block the preset unless a non-primary monitor is connected.</td></tr>
+      <tr><td><strong>Show in tray</strong></td><td>Include this preset in the tray context menu.</td></tr>
+      <tr><td><strong>Show as toolbar button</strong></td><td>Display a button for this preset in the main window toolbar.</td></tr>
+    </table>
+  </section>
+
+  <!-- ─── SAVE VS APPLY ─────────────────────────────────────────────── -->
+  <section id="save-vs-apply">
+    <h2><span class="icon">💾</span>Save vs Apply</h2>
+    <p>The Preset Editor has two action buttons:</p>
+    <table>
+      <tr><th>Button</th><th>What it does</th></tr>
+      <tr>
+        <td><strong>Save Preset</strong></td>
+        <td>
+          Validates and writes the current form values to <code>g_presets</code> in memory
+          and persists them to <code>settings.ini</code>. Updates the preset list, toolbar
+          buttons and hotkey registrations. Does not rearrange any windows.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Apply Preset</strong></td>
+        <td>
+          Saves first (same as <em>Save Preset</em>), then immediately applies the preset
+          — rearranging windows on the target monitor. Equivalent to saving and then
+          clicking the toolbar button.
+        </td>
+      </tr>
+    </table>
+    <div class="tip">
+      <strong>Tip</strong>
+      Use <strong>Apply Preset</strong> during setup to see the layout live while you
+      tweak columns, rows and width without leaving the editor.
+    </div>
+  </section>
+
+  <!-- ─── WILDCARDS ─────────────────────────────────────────────────── -->
+  <section id="wildcards">
+    <h2><span class="icon">✳️</span>Wildcard patterns</h2>
+    <p>
+      Filter fields, Left/Right process and title fields, and the Monitor Device field
+      all support two wildcard characters:
+    </p>
+    <table>
+      <tr><th>Character</th><th>Meaning</th></tr>
+      <tr><td><code>*</code></td><td>Match any sequence of characters (including none).</td></tr>
+      <tr><td><code>?</code></td><td>Match exactly one character.</td></tr>
+    </table>
+    <p>Matching is <strong>case-insensitive</strong>.</p>
+    <h3>Examples</h3>
+    <table>
+      <tr><th>Pattern</th><th>Matches</th></tr>
+      <tr><td><code>*chrome*</code></td><td>Any string containing "chrome" anywhere.</td></tr>
+      <tr><td><code>chrome.exe</code></td><td>Exactly "chrome.exe" (no wildcards).</td></tr>
+      <tr><td><code>*Antigravity*</code></td><td>Any window title containing "Antigravity".</td></tr>
+      <tr><td><code>report_202?.pdf</code></td><td>e.g. "report_2024.pdf" but not "report_20244.pdf".</td></tr>
+    </table>
+    <div class="note">
+      <strong>Performance note</strong>
+      Patterns are limited to a maximum of <strong>2 asterisks</strong> to prevent
+      exponential backtracking. Patterns with 3 or more <code>*</code> characters
+      will never match anything.
+    </div>
+  </section>
+
+  <!-- ─── RESOLUTION CLASSES ───────────────────────────────────────── -->
+  <section id="resolution-classes">
+    <h2><span class="icon">🖥️</span>Resolution classes</h2>
+    <p>
+      Resolution classes are broad monitor categories used as <a href="#activation">activation
+      conditions</a>. They classify a monitor by its physical pixel dimensions,
+      handling portrait-rotated monitors correctly by using the larger dimension as
+      "width" for classification.
+    </p>
+    <table>
+      <tr><th>Class</th><th>Approximate resolution</th><th>Pixel threshold</th></tr>
+      <tr><td><strong>Any</strong></td><td>No restriction</td><td>—</td></tr>
+      <tr><td><strong>2K</strong></td><td>2560×1440 (QHD)</td><td>≥ 2500×1400 (landscape)</td></tr>
+      <tr><td><strong>2.5K</strong></td><td>2560×1600</td><td>≥ 2500×1550 (landscape)</td></tr>
+      <tr><td><strong>4K</strong></td><td>3840×2160 (UHD)</td><td>≥ 3800×2100 (landscape)</td></tr>
+    </table>
+    <p>
+      Thresholds are intentionally generous — the goal is broad category matching,
+      not exact panel identification. A 2560×1600 panel classifies as <em>2.5K</em>,
+      not as <em>2K</em>, because 1600 &gt; 1550.
+    </p>
+    <div class="tip">
+      <strong>Tip</strong>
+      You can see a monitor's detected resolution class in the
+      <a href="#tabs">Monitors tab</a>.
+    </div>
+  </section>
+
+  <!-- ─── SYSTEM TRAY ───────────────────────────────────────────────── -->
+  <section id="system-tray">
+    <h2><span class="icon">📥</span>System tray</h2>
+    <p>
+      WindowLayouter places an icon in the Windows notification area (system tray).
+    </p>
+    <table>
+      <tr><th>Action</th><th>Result</th></tr>
+      <tr><td>Double-click icon</td><td>Show main window and bring it to the foreground.</td></tr>
+      <tr><td>Right-click icon</td><td>Open context menu.</td></tr>
+    </table>
+    <h3>Context menu items</h3>
+    <ul>
+      <li><strong>Show</strong> — bring main window to the foreground.</li>
+      <li><strong>Preset Editor</strong> — open the Preset Editor window.</li>
+      <li><strong>About</strong> — open the About dialog.</li>
+      <li><strong>Hide to Tray</strong> — hide the main window (keeps running in background).</li>
+      <li><em>Preset shortcuts</em> — one entry per preset with <em>Show in tray</em> enabled, with its hotkey shown in brackets. Greyed-out when the required monitor is absent.</li>
+      <li><strong>Exit</strong> — fully quit WindowLayouter.</li>
+    </ul>
+    <div class="note">
+      <strong>Note</strong>
+      Closing the main window with the × button hides it to the tray rather than exiting.
+      Use <em>Exit</em> in the tray menu to terminate the process.
+    </div>
+  </section>
+
+  <!-- ─── SETTINGS FILE ─────────────────────────────────────────────── -->
+  <section id="settings-file">
+    <h2><span class="icon">📄</span>Settings file</h2>
+    <p>
+      All settings are persisted to a plain-text INI file:
+    </p>
+    <pre>%LOCALAPPDATA%\WindowLayouter.Native\settings.ini</pre>
+    <p>
+      The file is created automatically on first launch with default values. It is saved
+      automatically whenever a setting changes (language switch, scope override, preset
+      editor save, window close).
+    </p>
+    <h3>File format</h3>
+    <p>
+      Standard INI format: <code>[Section]</code> headers, <code>key=value</code> pairs.
+      Inline comments start with <code>//</code> and are stripped when the file is read.
+    </p>
+    <pre>[Window]
+left=100
+top=100
+width=1760
+height=1040
+tab=1                  // Active tab: 0=Monitors, 1=Presets, 2=Rules
+window_gap_px=4        // Gap between tiles in pixels
+
+[App]
+language=en            // Language code — file must exist in lang\
+selection_scope_override=Follow preset
+
+[Hotkeys]
+PresetGrid2x2=Ctrl+Alt+1
+PresetSplit2x2=Ctrl+Alt+2
+...
+
+[Preset0]
+name=4K > 2x2
+kind=Grid
+columns=2
+rows=2
+require_external_monitor=1
+required_resolution_class=4K
+...</pre>
+    <div class="note">
+      <strong>Note</strong>
+      You can edit <code>settings.ini</code> directly in a text editor. The app reloads
+      language files automatically when they change on disk (poll interval: 1.5 s), but
+      <code>settings.ini</code> changes require a restart to take effect.
+    </div>
+  </section>
+
+  <!-- ─── LANGUAGE ─────────────────────────────────────────────────── -->
+  <section id="language">
+    <h2><span class="icon">🌐</span>Language</h2>
+    <p>
+      The UI language is loaded at runtime from a file in the <code>lang\</code>
+      folder next to <code>WindowLayouter.exe</code>:
+    </p>
+    <pre>lang\en.ini    ← English (default)
+lang\pl.ini    ← Polish</pre>
+    <p>
+      Switch language using the <strong>Language</strong> dropdown in the
+      <a href="#tabs">Rules tab</a>. The change takes effect immediately across all
+      windows including the Preset Editor. Language files are monitored for on-disk
+      changes — editing a file is reflected live without restarting.
+    </p>
+    <h3>Adding a language</h3>
+    <p>
+      Copy <code>lang\en.ini</code>, name it <code>lang\<em>code</em>.ini</code>
+      (e.g. <code>lang\de.ini</code>) and translate the values. The file must be
+      saved as <strong>UTF-8</strong> (with or without BOM). Restart the app and the
+      new language will be selectable from the dropdown.
+    </p>
+    <div class="note">
+      <strong>Note</strong>
+      If a selected language file cannot be found, the app silently falls back to
+      <code>lang\en.ini</code>. If that file is also missing, built-in English
+      fallback strings are used.
+    </div>
+  </section>
+
+</main>
+
+<script>
+// Highlight the TOC link whose section is most visible in the viewport.
+(function () {
+  const links = Array.from(document.querySelectorAll('nav a[href^="#"]'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+  function getActive() {
+    const viewH = window.innerHeight;
+    let best = null, bestScore = -Infinity;
+
+    sections.forEach((sec, i) => {
+      const r = sec.getBoundingClientRect();
+      // How many pixels of the section are inside the viewport?
+      const visible = Math.max(0, Math.min(r.bottom, viewH) - Math.max(r.top, 0));
+      // Bias toward sections near the top of the viewport.
+      const score = visible - Math.max(0, r.top) * 0.1;
+      if (score > bestScore) { bestScore = score; best = i; }
+    });
+
+    return best;
+  }
+
+  function update() {
+    const idx = getActive();
+    links.forEach((a, i) => {
+      a.classList.toggle('active', i === idx);
+    });
+  }
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) { requestAnimationFrame(() => { update(); ticking = false; }); ticking = true; }
+  }, { passive: true });
+
+  update();
+})();
+</script>
+</body>
+</html>
