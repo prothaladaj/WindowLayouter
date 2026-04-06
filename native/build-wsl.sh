@@ -7,7 +7,6 @@ WINDRES="${WINDRES:-x86_64-w64-mingw32-windres}"
 BUILD_TYPE="${1:-Release}"
 OUTPUT_DIR="$ROOT_DIR/bin/$BUILD_TYPE"
 OUTPUT_EXE="$OUTPUT_DIR/WindowLayouter.exe"
-RESOURCE_OBJ="$OUTPUT_DIR/app-icon-res.o"
 
 if ! command -v "$COMPILER" >/dev/null 2>&1; then
   echo "Missing compiler: $COMPILER" >&2
@@ -74,13 +73,13 @@ echo "Output: $OUTPUT_EXE"
   "$WINDRES" \
     "WindowLayouter.Native.rc" \
     -O coff \
-    -o "$RESOURCE_OBJ"
+    -o "$OUTPUT_DIR/app-icon-res.o"
 )
 
 "$COMPILER" \
   "${CXXFLAGS[@]}" \
   "$ROOT_DIR/main.cpp" \
-  "$RESOURCE_OBJ" \
+  "$OUTPUT_DIR/app-icon-res.o" \
   -o "$OUTPUT_EXE" \
   "${LDFLAGS[@]}"
 
