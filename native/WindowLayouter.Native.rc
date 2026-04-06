@@ -1,0 +1,37 @@
+#include "resource.h"
+#include "build-version.h"
+
+IDI_APP_ICON ICON "assets/windowlayouter-native-icon.ico"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION WL_VERSION_COMMA
+ PRODUCTVERSION WL_VERSION_COMMA
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "TODO: Company\0"
+            VALUE "FileDescription", "TODO: WindowLayouter Native\0"
+            VALUE "FileVersion", WL_VERSION_DOT "\0"
+            VALUE "InternalName", "WindowLayouter.Native.exe\0"
+            VALUE "OriginalFilename", "WindowLayouter.Native.exe\0"
+            VALUE "ProductName", "TODO: WindowLayouter\0"
+            VALUE "ProductVersion", WL_VERSION_DOT "\0"
+            VALUE "LegalCopyright", "TODO: Copyright\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
