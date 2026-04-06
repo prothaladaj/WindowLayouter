@@ -6,7 +6,7 @@ COMPILER="${CXX:-x86_64-w64-mingw32-g++}"
 WINDRES="${WINDRES:-x86_64-w64-mingw32-windres}"
 BUILD_TYPE="${1:-Release}"
 OUTPUT_DIR="$ROOT_DIR/bin/$BUILD_TYPE"
-OUTPUT_EXE="$OUTPUT_DIR/WindowLayouter.Native.exe"
+OUTPUT_EXE="$OUTPUT_DIR/WindowLayouter.exe"
 RESOURCE_OBJ="$OUTPUT_DIR/app-icon-res.o"
 
 if ! command -v "$COMPILER" >/dev/null 2>&1; then
